@@ -1,0 +1,546 @@
+/* ============================================================
+   style.css – Main application styles
+   ============================================================ */
+
+/* ---------- Reset & Base ----------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--gray-50);
+  color: var(--gray-800);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a { color: var(--secondary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- Scrollbar ------------------------------------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+/* ==========================================================
+   NAVBAR
+   ========================================================== */
+.navbar-brand-custom {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--white) !important;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.top-navbar {
+  background: var(--primary-dark) !important;
+  height: var(--navbar-height);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  box-shadow: var(--shadow-md);
+}
+
+/* ==========================================================
+   SIDEBAR
+   ========================================================== */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  position: fixed;
+  top: var(--navbar-height);
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  transition: var(--transition);
+  z-index: 1020;
+}
+
+.sidebar .nav-link {
+  color: var(--sidebar-text);
+  padding: .6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  font-size: .9rem;
+  border-radius: 0;
+  transition: var(--transition);
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  background: var(--sidebar-active);
+  color: var(--white);
+}
+
+.sidebar .nav-section {
+  padding: .75rem 1.25rem .25rem;
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--gray-400);
+  font-weight: 600;
+}
+
+/* ==========================================================
+   MAIN CONTENT
+   ========================================================== */
+.main-content {
+  margin-left: var(--sidebar-width);
+  margin-top: var(--navbar-height);
+  padding: 1.5rem;
+  min-height: calc(100vh - var(--navbar-height));
+}
+
+/* ==========================================================
+   AUTH PAGES
+   ========================================================== */
+.auth-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.auth-card {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 460px;
+  padding: 2.5rem;
+}
+
+.auth-logo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+  margin-bottom: .25rem;
+}
+
+.auth-subtitle {
+  text-align: center;
+  color: var(--gray-500);
+  margin-bottom: 1.75rem;
+  font-size: .9rem;
+}
+
+.auth-tabs .nav-link {
+  color: var(--gray-500);
+  font-weight: 500;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.auth-tabs .nav-link.active {
+  color: var(--primary);
+  border-bottom-color: transparent;
+}
+
+/* ==========================================================
+   STAT CARDS
+   ========================================================== */
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-left: 4px solid var(--primary);
+  transition: var(--transition);
+}
+
+.stat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.stat-card.success { border-left-color: var(--success); }
+.stat-card.warning { border-left-color: var(--warning); }
+.stat-card.danger  { border-left-color: var(--danger);  }
+.stat-card.info    { border-left-color: var(--info);    }
+
+.stat-card .stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  background: var(--gray-100);
+  flex-shrink: 0;
+}
+
+.stat-card .stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1.2;
+}
+
+.stat-card .stat-label {
+  font-size: .8rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+/* ==========================================================
+   CARDS
+   ========================================================== */
+.content-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.content-card .card-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.content-card .card-title-bar h5 {
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0;
+}
+
+/* ==========================================================
+   TABLES
+   ========================================================== */
+.table-custom {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+
+.table-custom thead th {
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: .75rem 1rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+
+.table-custom tbody td {
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-700);
+  vertical-align: middle;
+}
+
+.table-custom tbody tr:hover td { background: var(--gray-50); }
+.table-custom tbody tr:last-child td { border-bottom: none; }
+
+/* ==========================================================
+   BADGES
+   ========================================================== */
+.badge-custom {
+  display: inline-block;
+  padding: .25em .7em;
+  font-size: .75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+}
+
+.badge-savings  { background: #d1fae5; color: #065f46; }
+.badge-loan     { background: #dbeafe; color: #1e40af; }
+.badge-expense  { background: #fee2e2; color: #991b1b; }
+.badge-low      { background: #d1fae5; color: #065f46; }
+.badge-medium   { background: #fef3c7; color: #92400e; }
+.badge-high     { background: #fee2e2; color: #991b1b; }
+.badge-pending  { background: #fef3c7; color: #92400e; }
+.badge-approved { background: #d1fae5; color: #065f46; }
+.badge-rejected { background: #fee2e2; color: #991b1b; }
+
+/* ==========================================================
+   FORMS
+   ========================================================== */
+.form-control, .form-select {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: .5rem .875rem;
+  font-size: .9rem;
+  color: var(--gray-800);
+  transition: var(--transition);
+  background: var(--white);
+}
+
+.form-control:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26,107,60,.15);
+}
+
+.form-label {
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  margin-bottom: .35rem;
+  display: block;
+}
+
+.invalid-feedback { display: block; color: var(--danger); font-size: .8rem; margin-top: .25rem; }
+
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
+.btn-primary-custom {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: .55rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .9rem;
+}
+.btn-primary-custom:hover { background: var(--primary-dark); color: var(--white); }
+
+.btn-outline-custom {
+  background: transparent;
+  color: var(--primary);
+  border: 1.5px solid var(--primary);
+  padding: .5rem 1.2rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .9rem;
+}
+.btn-outline-custom:hover { background: var(--primary); color: var(--white); }
+
+/* ==========================================================
+   TOAST NOTIFICATIONS
+   ========================================================== */
+#toast-container {
+  position: fixed;
+  top: calc(var(--navbar-height) + .75rem);
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.toast-msg {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: .75rem 1.25rem;
+  min-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .875rem;
+  animation: slideIn .25s ease;
+  border-left: 4px solid var(--info);
+}
+.toast-msg.success { border-left-color: var(--success); }
+.toast-msg.error   { border-left-color: var(--danger); }
+.toast-msg.warning { border-left-color: var(--warning); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ==========================================================
+   LOADING SPINNER
+   ========================================================== */
+.spinner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+.spinner-overlay.active { display: flex; }
+
+/* ==========================================================
+   BREADCRUMB
+   ========================================================== */
+.breadcrumb-custom {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .85rem;
+  color: var(--gray-500);
+  margin-bottom: 1.25rem;
+}
+.breadcrumb-custom a { color: var(--secondary); }
+.breadcrumb-custom .sep { color: var(--gray-300); }
+
+/* ==========================================================
+   DISCUSSION
+   ========================================================== */
+.discussion-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.discussion-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.comment-item {
+  padding: 1rem;
+  border-radius: var(--radius);
+  background: var(--gray-50);
+  margin-bottom: .75rem;
+}
+.comment-item .comment-meta {
+  font-size: .8rem;
+  color: var(--gray-500);
+  margin-bottom: .35rem;
+}
+
+/* ==========================================================
+   PLAN / SCHEME CARDS
+   ========================================================== */
+.plan-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  transition: var(--transition);
+  height: 100%;
+}
+.plan-card:hover { box-shadow: var(--shadow-md); }
+.plan-card .plan-rate {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+/* ==========================================================
+   CHART WRAPPERS
+   ========================================================== */
+.chart-wrapper {
+  position: relative;
+  height: 280px;
+}
+
+/* ==========================================================
+   PAGE HEADER
+   ========================================================== */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+.page-header h4 {
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0;
+}
+
+/* ==========================================================
+   FILTER BAR
+   ========================================================== */
+.filter-bar {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: flex-end;
+}
+
+/* ==========================================================
+   PAGINATION
+   ========================================================== */
+.pagination-custom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  margin-top: 1.25rem;
+}
+.pagination-custom button {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: .85rem;
+  transition: var(--transition);
+  color: var(--gray-700);
+}
+.pagination-custom button:hover,
+.pagination-custom button.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+/* ==========================================================
+   USER AVATAR
+   ========================================================== */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: .85rem;
+  flex-shrink: 0;
+}
+
+/* ==========================================================
+   MODAL HELPERS
+   ========================================================== */
+.modal-header-custom {
+  background: var(--primary);
+  color: var(--white);
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* ==========================================================
+   RESPONSIVE UTILITY
+   ========================================================== */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .top-navbar .sidebar-toggle { display: flex !important; }
+  .stat-card .stat-value { font-size: 1.3rem; }
+}
