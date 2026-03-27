@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Members – SHG Financial Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/theme.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+
+<!-- Top Navbar -->
+<nav class="navbar top-navbar px-3">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-link text-white p-0 sidebar-toggle d-md-none" id="sidebar-toggle">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+    <a href="/dashboard" class="navbar-brand-custom">
+      <i class="bi bi-people-fill"></i> SHG Tracker
+    </a>
+  </div>
+  <div class="d-flex align-items-center gap-3 ms-auto">
+    <button class="btn btn-link text-white p-0" data-action="toggle-dark" title="Toggle dark mode">
+      <i class="bi bi-moon-stars"></i>
+    </button>
+    <div class="dropdown">
+      <button class="btn btn-link text-white p-0 d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+        <div class="avatar" id="nav-user-initials" style="width:34px;height:34px;font-size:.85rem">U</div>
+        <div class="d-none d-md-block text-start">
+          <div style="font-size:.85rem;font-weight:600;color:#fff" id="nav-user-name">User</div>
+          <div style="font-size:.72rem;color:#a7f3d0;text-transform:capitalize" id="nav-user-role">role</div>
+        </div>
+        <i class="bi bi-chevron-down" style="font-size:.7rem;color:#a7f3d0"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle me-2"></i>Profile</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="#" data-action="logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar">
+  <div class="pt-3">
+    <div class="nav-section">Main</div>
+    <a href="/dashboard" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="/groups" class="nav-link"><i class="bi bi-diagram-3"></i> Groups</a>
+    <a href="/members" class="nav-link"><i class="bi bi-people"></i> Members</a>
+
+    <div class="nav-section mt-2">Finance</div>
+    <a href="/finance/transactions" class="nav-link"><i class="bi bi-arrow-left-right"></i> Transactions</a>
+    <a href="/finance/reports" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <a href="/finance/analytics" class="nav-link"><i class="bi bi-pie-chart"></i> Analytics</a>
+
+    <div class="nav-section mt-2">Advisory</div>
+    <a href="/advisory/investments" class="nav-link"><i class="bi bi-bank"></i> Investment Plans</a>
+    <a href="/advisory/schemes" class="nav-link"><i class="bi bi-building-check"></i> Govt Schemes</a>
+    <a href="/advisory/recommendations" class="nav-link"><i class="bi bi-lightbulb"></i> Recommendations</a>
+
+    <div class="nav-section mt-2">Community</div>
+    <a href="/discussion/list" class="nav-link"><i class="bi bi-chat-dots"></i> Discussions</a>
+
+    <div class="nav-section mt-2" data-role-requires="admin">Admin</div>
+    <a href="/admin/brokers" class="nav-link" data-role-requires="admin"><i class="bi bi-person-badge"></i> Broker Verification</a>
+    <a href="/admin/statistics" class="nav-link" data-role-requires="admin"><i class="bi bi-graph-up"></i> Statistics</a>
+    <a href="/admin/settings" class="nav-link" data-role-requires="admin"><i class="bi bi-gear"></i> Settings</a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+  <div class="breadcrumb-custom">
+    <a href="/dashboard"><i class="bi bi-house me-1"></i>Home</a>
+    <span class="sep">/</span>
+    <span>Members</span>
+  </div>
+
+  <div class="page-header">
+    <h4><i class="bi bi-people me-2"></i>Members</h4>
+    <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+      <i class="bi bi-person-plus"></i> Add Member
+    </button>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="flex-grow-1">
+      <input type="text" class="form-control" id="member-search" placeholder="Search members…">
+    </div>
+    <select class="form-select" id="member-filter-role" style="max-width:180px">
+      <option value="">All Roles</option>
+      <option value="PRESIDENT">President</option>
+      <option value="TREASURER">Treasurer</option>
+      <option value="MEMBER">Member</option>
+    </select>
+    <select class="form-select" id="member-filter-status" style="max-width:180px">
+      <option value="">All Statuses</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+  </div>
+
+  <!-- Members Table -->
+  <div class="content-card">
+    <div class="card-title-bar">
+      <h5><i class="bi bi-table me-2"></i>All Members</h5>
+      <button class="btn-outline-custom btn-sm" id="btn-export-members">
+        <i class="bi bi-download"></i> Export CSV
+      </button>
+    </div>
+    <div class="table-responsive">
+      <table class="table-custom w-100">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Email / Phone</th>
+            <th>Savings</th>
+            <th>Loans</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="member-list-body">
+          <tr>
+            <td colspan="9" class="text-center text-muted py-3">
+              <div class="spinner-border spinner-border-sm me-2"></div>Loading…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="member-pagination"></div>
+  </div>
+</main>
+
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Add New Member</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-member-form" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="mem-fullname">Full Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="mem-fullname" required>
+              <div class="invalid-feedback">Full name is required.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="mem-username">Username <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="mem-username" required minlength="3">
+              <div class="invalid-feedback">Username must be at least 3 characters.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="mem-email">Email</label>
+              <input type="email" class="form-control" id="mem-email">
+              <div class="invalid-feedback">Please enter a valid email.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="mem-phone">Phone Number</label>
+              <input type="tel" class="form-control" id="mem-phone">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="mem-role">Role <span class="text-danger">*</span></label>
+              <select class="form-select" id="mem-role" required>
+                <option value="">Select role…</option>
+                <option value="PRESIDENT">President</option>
+                <option value="TREASURER">Treasurer</option>
+                <option value="MEMBER">Member</option>
+              </select>
+              <div class="invalid-feedback">Please select a role.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="mem-password">Password <span class="text-danger">*</span></label>
+              <input type="password" class="form-control" id="mem-password" required minlength="6">
+              <div class="invalid-feedback">Password must be at least 6 characters.</div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-primary-custom" id="save-member-btn">
+          <i class="bi bi-check-circle"></i> Save Member
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div class="modal fade" id="editMemberModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Member</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-member-form" novalidate>
+          <input type="hidden" id="edit-mem-id">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="edit-mem-fullname">Full Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="edit-mem-fullname" required>
+              <div class="invalid-feedback">Full name is required.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="edit-mem-email">Email</label>
+              <input type="email" class="form-control" id="edit-mem-email">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="edit-mem-phone">Phone Number</label>
+              <input type="tel" class="form-control" id="edit-mem-phone">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="edit-mem-role">Role</label>
+              <select class="form-select" id="edit-mem-role">
+                <option value="PRESIDENT">President</option>
+                <option value="TREASURER">Treasurer</option>
+                <option value="MEMBER">Member</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="edit-mem-status">Status</label>
+              <select class="form-select" id="edit-mem-status">
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-primary-custom" id="update-member-btn">
+          <i class="bi bi-check-circle"></i> Update Member
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script>
+  let _allMembers = [];
+  let _memberPage = 1;
+  const MEMBERS_PER_PAGE = 10;
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    Auth.requireAuth();
+    await loadMembers();
+    bindMemberFilters();
+    bindAddMember();
+    bindUpdateMember();
+    document.getElementById('btn-export-members')?.addEventListener('click', () => {
+      Utils.downloadCSV(_allMembers, 'members.csv');
+    });
+  });
+
+  async function loadMembers() {
+    try {
+      _allMembers = await API.get('/api/members') || [];
+    } catch {
+      _allMembers = _demoMembers();
+    }
+    renderMembers();
+  }
+
+  function renderMembers() {
+    const search = (document.getElementById('member-search')?.value || '').toLowerCase();
+    const role   = document.getElementById('member-filter-role')?.value   || '';
+    const status = document.getElementById('member-filter-status')?.value || '';
+
+    let data = _allMembers.filter(m => {
+      if (role   && (m.role   || '').toUpperCase() !== role)   return false;
+      if (status && (m.status || '').toUpperCase() !== status) return false;
+      if (search && !(m.fullName || m.name || '').toLowerCase().includes(search) &&
+                    !(m.username || '').toLowerCase().includes(search) &&
+                    !(m.email    || '').toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    const paged = Utils.paginate(data, _memberPage, MEMBERS_PER_PAGE);
+    const tbody = document.getElementById('member-list-body');
+    if (!tbody) return;
+
+    if (!paged.items.length) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-3">No members found.</td></tr>';
+    } else {
+      const start = (_memberPage - 1) * MEMBERS_PER_PAGE;
+      tbody.innerHTML = paged.items.map((m, i) => {
+        const name    = Utils.escapeHtml(m.fullName || m.name || '—');
+        const role    = Utils.escapeHtml(m.role     || '—');
+        const email   = Utils.escapeHtml(m.email    || '—');
+        const phone   = Utils.escapeHtml(m.phoneNumber || m.phone || '—');
+        const savings = Utils.formatCurrency(m.savingsAmount || m.savings || 0);
+        const loans   = Utils.formatCurrency(m.loanAmount    || m.loans   || 0);
+        const status  = m.status || 'ACTIVE';
+        const joined  = Utils.formatDate(m.joinedDate || m.createdAt);
+        return `
+          <tr>
+            <td>${start + i + 1}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar">${Utils.initials(m.fullName || m.name)}</div>
+                <div>
+                  <div class="fw-bold">${name}</div>
+                  <div class="text-muted" style="font-size:.8rem">${Utils.escapeHtml(m.username || '')}</div>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge-custom badge-savings">${role}</span></td>
+            <td>
+              <div>${email}</div>
+              <div class="text-muted" style="font-size:.8rem">${phone}</div>
+            </td>
+            <td>${savings}</td>
+            <td>${loans}</td>
+            <td><span class="badge-custom ${status === 'ACTIVE' ? 'badge-approved' : 'badge-rejected'}">${Utils.escapeHtml(status)}</span></td>
+            <td>${joined}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditMember(${m.id || i})">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteMember(${m.id || i})">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    renderPagination(document.getElementById('member-pagination'), paged.page, paged.pages, p => {
+      _memberPage = p; renderMembers();
+    });
+  }
+
+  function bindMemberFilters() {
+    ['member-search', 'member-filter-role', 'member-filter-status'].forEach(id => {
+      document.getElementById(id)?.addEventListener('input', () => { _memberPage = 1; renderMembers(); });
+    });
+  }
+
+  function bindAddMember() {
+    document.getElementById('save-member-btn')?.addEventListener('click', async () => {
+      const form = document.getElementById('add-member-form');
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) return;
+
+      const payload = {
+        fullName:    document.getElementById('mem-fullname').value,
+        username:    document.getElementById('mem-username').value,
+        email:       document.getElementById('mem-email').value,
+        phoneNumber: document.getElementById('mem-phone').value,
+        role:        document.getElementById('mem-role').value,
+        password:    document.getElementById('mem-password').value
+      };
+
+      try {
+        await API.post('/api/members', payload);
+        showToast('Member added successfully!', 'success');
+        form.reset(); form.classList.remove('was-validated');
+        bootstrap.Modal.getInstance(document.getElementById('addMemberModal'))?.hide();
+        await loadMembers();
+      } catch (err) {
+        showToast(err.message || 'Failed to add member.', 'error');
+      }
+    });
+  }
+
+  function openEditMember(id) {
+    const m = _allMembers.find(x => x.id === id) || _allMembers[id];
+    if (!m) return;
+    document.getElementById('edit-mem-id').value       = m.id || id;
+    document.getElementById('edit-mem-fullname').value = m.fullName || m.name || '';
+    document.getElementById('edit-mem-email').value    = m.email || '';
+    document.getElementById('edit-mem-phone').value    = m.phoneNumber || m.phone || '';
+    document.getElementById('edit-mem-role').value     = (m.role || 'MEMBER').toUpperCase();
+    document.getElementById('edit-mem-status').value   = (m.status || 'ACTIVE').toUpperCase();
+    new bootstrap.Modal(document.getElementById('editMemberModal')).show();
+  }
+
+  function bindUpdateMember() {
+    document.getElementById('update-member-btn')?.addEventListener('click', async () => {
+      const form = document.getElementById('edit-member-form');
+      form.classList.add('was-validated');
+      if (!form.checkValidity()) return;
+
+      const id = document.getElementById('edit-mem-id').value;
+      const payload = {
+        fullName:    document.getElementById('edit-mem-fullname').value,
+        email:       document.getElementById('edit-mem-email').value,
+        phoneNumber: document.getElementById('edit-mem-phone').value,
+        role:        document.getElementById('edit-mem-role').value,
+        status:      document.getElementById('edit-mem-status').value
+      };
+
+      try {
+        await API.put('/api/members/' + id, payload);
+        showToast('Member updated successfully!', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('editMemberModal'))?.hide();
+        await loadMembers();
+      } catch (err) {
+        showToast(err.message || 'Failed to update member.', 'error');
+      }
+    });
+  }
+
+  async function deleteMember(id) {
+    if (!confirm('Are you sure you want to remove this member?')) return;
+    try {
+      await API.del('/api/members/' + id);
+      showToast('Member removed.', 'success');
+      await loadMembers();
+    } catch (err) {
+      showToast(err.message || 'Failed to remove member.', 'error');
+    }
+  }
+
+  function _demoMembers() {
+    return [
+      { id:1, fullName:'Priya Sharma',  username:'priya',  email:'priya@example.com',  phoneNumber:'9876543210', role:'PRESIDENT', savingsAmount:15000, loanAmount:0,     status:'ACTIVE', joinedDate:'2019-01-15' },
+      { id:2, fullName:'Sunita Devi',   username:'sunita', email:'sunita@example.com', phoneNumber:'9988776655', role:'TREASURER', savingsAmount:12000, loanAmount:5000,  status:'ACTIVE', joinedDate:'2019-01-15' },
+      { id:3, fullName:'Kavita Patel',  username:'kavita', email:'kavita@example.com', phoneNumber:'9123456780', role:'MEMBER',    savingsAmount:8000,  loanAmount:10000, status:'ACTIVE', joinedDate:'2019-03-20' },
+      { id:4, fullName:'Rekha Verma',   username:'rekha',  email:'rekha@example.com',  phoneNumber:'9012345678', role:'MEMBER',    savingsAmount:9500,  loanAmount:0,     status:'ACTIVE', joinedDate:'2020-01-10' },
+      { id:5, fullName:'Anjali Singh',  username:'anjali', email:'anjali@example.com', phoneNumber:'8123456789', role:'MEMBER',    savingsAmount:7200,  loanAmount:3000,  status:'INACTIVE', joinedDate:'2020-06-05' },
+      { id:6, fullName:'Meera Gupta',   username:'meera',  email:'meera@example.com',  phoneNumber:'8234567890', role:'MEMBER',    savingsAmount:11000, loanAmount:8000,  status:'ACTIVE', joinedDate:'2019-08-12' }
+    ];
+  }
+</script>
+</body>
+</html>

@@ -67,6 +67,33 @@ public class WebController {
         return "discussion/detail";
     }
 
+    // Groups and Members
+    @GetMapping("/groups")
+    public String groups() {
+        return "group";
+    }
+
+    @GetMapping("/members")
+    public String members() {
+        return "members";
+    }
+
+    // Convenience redirects for flat URL paths
+    @GetMapping("/transactions")
+    public String transactionsRedirect() {
+        return "transaction";
+    }
+
+    @GetMapping("/reports")
+    public String reportsRedirect() {
+        return "reports";
+    }
+
+    @GetMapping("/admin")
+    public String adminRedirect() {
+        return "admin";
+    }
+
     // Admin module
     @GetMapping("/admin/brokers")
     public String brokers() {
