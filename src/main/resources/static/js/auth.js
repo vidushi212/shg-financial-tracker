@@ -9,8 +9,10 @@ const Auth = (() => {
 
   /** Persist logged-in user info */
   function saveUser(user) {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    if (user.token) sessionStorage.setItem('shg_token', user.token);
+    const storedUser = { ...user };
+    if (storedUser.role) storedUser.role = storedUser.role.toLowerCase();
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(storedUser));
+    if (storedUser.token) sessionStorage.setItem('shg_token', storedUser.token);
   }
 
   /** Retrieve stored user (or null) */
@@ -71,6 +73,25 @@ const Auth = (() => {
     }
   }
 
+  /**
+   * Create a demo login session for the given role.
+   */
+  function demoLogin(role) {
+    const normalizedRole = role.toLowerCase();
+    const username = `${normalizedRole.replace(/\s+/g, '.')}-demo`;
+    const fullName = `${role.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')} Demo`;
+    saveUser({ username, fullName, role: normalizedRole, token: `demo-${normalizedRole.replace(/\s+/g, '_')}` });
+    window.location.href = '/dashboard';
+  }
+
+  /**
+   * Return the current user's role formatted for display.
+   */
+  function displayRole() {
+    const u = getUser();
+    return u ? Utils.titleCase(u.role || '') : '';
+  }
+
   /** Helper used by dashboard/navbar to render the user's display name */
   function displayName() {
     const u = getUser();
@@ -84,5 +105,5 @@ const Auth = (() => {
   }
 
   return { saveUser, getUser, logout, isLoggedIn, requireAuth, redirectIfLoggedIn,
-           login, register, displayName, role };
+           login, register, demoLogin, displayName, role, displayRole };
 })();

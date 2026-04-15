@@ -93,11 +93,16 @@
     <div class="flex-grow-1">
       <input type="text" class="form-control" id="member-search" placeholder="Search members…">
     </div>
-    <select class="form-select" id="member-filter-role" style="max-width:180px">
+    <select class="form-select" id="member-filter-role" style="max-width:220px">
       <option value="">All Roles</option>
-      <option value="PRESIDENT">President</option>
-      <option value="TREASURER">Treasurer</option>
-      <option value="MEMBER">Member</option>
+      <option value="President">President</option>
+      <option value="Treasurer">Treasurer</option>
+      <option value="Secretary">Secretary</option>
+      <option value="Accountant">Accountant</option>
+      <option value="Broker">Broker</option>
+      <option value="Admin">Admin</option>
+      <option value="Government Officer">Government Officer</option>
+      <option value="Member">Member</option>
     </select>
     <select class="form-select" id="member-filter-status" style="max-width:180px">
       <option value="">All Statuses</option>
@@ -176,9 +181,14 @@
               <label class="form-label" for="mem-role">Role <span class="text-danger">*</span></label>
               <select class="form-select" id="mem-role" required>
                 <option value="">Select role…</option>
-                <option value="PRESIDENT">President</option>
-                <option value="TREASURER">Treasurer</option>
-                <option value="MEMBER">Member</option>
+                <option value="President">President</option>
+                <option value="Treasurer">Treasurer</option>
+                <option value="Secretary">Secretary</option>
+                <option value="Accountant">Accountant</option>
+                <option value="Member">Member</option>
+                <option value="Broker">Broker</option>
+                <option value="Admin">Admin</option>
+                <option value="Government Officer">Government Officer</option>
               </select>
               <div class="invalid-feedback">Please select a role.</div>
             </div>
@@ -228,9 +238,14 @@
             <div class="col-md-6">
               <label class="form-label" for="edit-mem-role">Role</label>
               <select class="form-select" id="edit-mem-role">
-                <option value="PRESIDENT">President</option>
-                <option value="TREASURER">Treasurer</option>
-                <option value="MEMBER">Member</option>
+                <option value="President">President</option>
+                <option value="Treasurer">Treasurer</option>
+                <option value="Secretary">Secretary</option>
+                <option value="Accountant">Accountant</option>
+                <option value="Member">Member</option>
+                <option value="Broker">Broker</option>
+                <option value="Admin">Admin</option>
+                <option value="Government Officer">Government Officer</option>
               </select>
             </div>
             <div class="col-md-6">
@@ -264,8 +279,25 @@
   let _memberPage = 1;
   const MEMBERS_PER_PAGE = 10;
 
+  function normalizeText(value) {
+    return String(value || '')
+      .trim()
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .toLowerCase();
+  }
+
+  function normalizeRole(value) {
+    return normalizeText(value);
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     Auth.requireAuth();
+    const userRole = Auth.role();
+    const canEditMembers = normalizeRole(userRole) === 'president' || normalizeRole(userRole) === 'secretary';
+    if (!canEditMembers) {
+      document.querySelector('[data-bs-target="#addMemberModal"]')?.style.setProperty('display', 'none', 'important');
+    }
     await loadMembers();
     bindMemberFilters();
     bindAddMember();
@@ -285,13 +317,18 @@
   }
 
   function renderMembers() {
+    const userRole = Auth.role();
+    const canEditMembers = normalizeRole(userRole) === 'president' || normalizeRole(userRole) === 'secretary';
     const search = (document.getElementById('member-search')?.value || '').toLowerCase();
     const role   = document.getElementById('member-filter-role')?.value   || '';
     const status = document.getElementById('member-filter-status')?.value || '';
+    const normalizedRoleFilter = normalizeRole(role);
 
     let data = _allMembers.filter(m => {
-      if (role   && (m.role   || '').toUpperCase() !== role)   return false;
-      if (status && (m.status || '').toUpperCase() !== status) return false;
+      const memberRole = normalizeRole(m.role || '');
+      const memberStatus = m.status ? String(m.status).toUpperCase() : (m.active ? 'ACTIVE' : 'INACTIVE');
+      if (role   && memberRole !== normalizedRoleFilter) return false;
+      if (status && memberStatus !== status) return false;
       if (search && !(m.fullName || m.name || '').toLowerCase().includes(search) &&
                     !(m.username || '').toLowerCase().includes(search) &&
                     !(m.email    || '').toLowerCase().includes(search)) return false;
@@ -308,12 +345,12 @@
       const start = (_memberPage - 1) * MEMBERS_PER_PAGE;
       tbody.innerHTML = paged.items.map((m, i) => {
         const name    = Utils.escapeHtml(m.fullName || m.name || '—');
-        const role    = Utils.escapeHtml(m.role     || '—');
+        const role    = Utils.escapeHtml(Utils.titleCase(m.role || '—'));
         const email   = Utils.escapeHtml(m.email    || '—');
         const phone   = Utils.escapeHtml(m.phoneNumber || m.phone || '—');
         const savings = Utils.formatCurrency(m.savingsAmount || m.savings || 0);
         const loans   = Utils.formatCurrency(m.loanAmount    || m.loans   || 0);
-        const status  = m.status || 'ACTIVE';
+        const status  = m.status ? String(m.status).toUpperCase() : (m.active ? 'ACTIVE' : 'INACTIVE');
         const joined  = Utils.formatDate(m.joinedDate || m.createdAt);
         return `
           <tr>
@@ -337,10 +374,10 @@
             <td><span class="badge-custom ${status === 'ACTIVE' ? 'badge-approved' : 'badge-rejected'}">${Utils.escapeHtml(status)}</span></td>
             <td>${joined}</td>
             <td>
-              <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditMember(${m.id || i})">
+              <button class="btn btn-sm btn-outline-primary me-1 edit-member-action" data-member-id="${m.id || i}" style="display:${canEditMembers ? 'inline-block' : 'none'}">
                 <i class="bi bi-pencil"></i>
               </button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteMember(${m.id || i})">
+              <button class="btn btn-sm btn-outline-danger delete-member-action" data-member-id="${m.id || i}" style="display:${canEditMembers ? 'inline-block' : 'none'}">
                 <i class="bi bi-trash"></i>
               </button>
             </td>
@@ -348,15 +385,16 @@
       }).join('');
     }
 
+    bindMemberActions(canEditMembers);
     renderPagination(document.getElementById('member-pagination'), paged.page, paged.pages, p => {
       _memberPage = p; renderMembers();
     });
   }
 
   function bindMemberFilters() {
-    ['member-search', 'member-filter-role', 'member-filter-status'].forEach(id => {
-      document.getElementById(id)?.addEventListener('input', () => { _memberPage = 1; renderMembers(); });
-    });
+    document.getElementById('member-search')?.addEventListener('input', () => { _memberPage = 1; renderMembers(); });
+    document.getElementById('member-filter-role')?.addEventListener('change', () => { _memberPage = 1; renderMembers(); });
+    document.getElementById('member-filter-status')?.addEventListener('change', () => { _memberPage = 1; renderMembers(); });
   }
 
   function bindAddMember() {
@@ -381,21 +419,53 @@
         bootstrap.Modal.getInstance(document.getElementById('addMemberModal'))?.hide();
         await loadMembers();
       } catch (err) {
-        showToast(err.message || 'Failed to add member.', 'error');
+        console.error('Add member error:', err);
+        showToast(err.message || 'Failed to add member. Please try again.', 'error');
       }
     });
   }
 
   function openEditMember(id) {
-    const m = _allMembers.find(x => x.id === id) || _allMembers[id];
-    if (!m) return;
+    const userRole = Auth.role();
+    if (userRole !== 'president' && userRole !== 'secretary') {
+      showToast('You do not have permission to edit members.', 'error');
+      return;
+    }
+    const memberId = Number(id);
+    const m = _allMembers.find(x => x.id === memberId || String(x.id) === String(id));
+    if (!m) {
+      showToast('Unable to load member details.', 'error');
+      return;
+    }
     document.getElementById('edit-mem-id').value       = m.id || id;
     document.getElementById('edit-mem-fullname').value = m.fullName || m.name || '';
     document.getElementById('edit-mem-email').value    = m.email || '';
     document.getElementById('edit-mem-phone').value    = m.phoneNumber || m.phone || '';
-    document.getElementById('edit-mem-role').value     = (m.role || 'MEMBER').toUpperCase();
+
+    const roleSelectEl = document.getElementById('edit-mem-role');
+    const displayRole = Utils.titleCase(m.role || 'Member');
+    roleSelectEl.value = displayRole;
+    if (!roleSelectEl.value || roleSelectEl.value === '') {
+      roleSelectEl.value = 'Member';
+    }
+
     document.getElementById('edit-mem-status').value   = (m.status || 'ACTIVE').toUpperCase();
     new bootstrap.Modal(document.getElementById('editMemberModal')).show();
+  }
+
+  function bindMemberActions(canEditMembers) {
+    document.querySelectorAll('.edit-member-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const memberId = btn.dataset.memberId;
+        openEditMember(memberId);
+      });
+    });
+    document.querySelectorAll('.delete-member-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const memberId = btn.dataset.memberId;
+        deleteMember(memberId);
+      });
+    });
   }
 
   function bindUpdateMember() {
@@ -437,12 +507,15 @@
 
   function _demoMembers() {
     return [
-      { id:1, fullName:'Priya Sharma',  username:'priya',  email:'priya@example.com',  phoneNumber:'9876543210', role:'PRESIDENT', savingsAmount:15000, loanAmount:0,     status:'ACTIVE', joinedDate:'2019-01-15' },
-      { id:2, fullName:'Sunita Devi',   username:'sunita', email:'sunita@example.com', phoneNumber:'9988776655', role:'TREASURER', savingsAmount:12000, loanAmount:5000,  status:'ACTIVE', joinedDate:'2019-01-15' },
-      { id:3, fullName:'Kavita Patel',  username:'kavita', email:'kavita@example.com', phoneNumber:'9123456780', role:'MEMBER',    savingsAmount:8000,  loanAmount:10000, status:'ACTIVE', joinedDate:'2019-03-20' },
-      { id:4, fullName:'Rekha Verma',   username:'rekha',  email:'rekha@example.com',  phoneNumber:'9012345678', role:'MEMBER',    savingsAmount:9500,  loanAmount:0,     status:'ACTIVE', joinedDate:'2020-01-10' },
-      { id:5, fullName:'Anjali Singh',  username:'anjali', email:'anjali@example.com', phoneNumber:'8123456789', role:'MEMBER',    savingsAmount:7200,  loanAmount:3000,  status:'INACTIVE', joinedDate:'2020-06-05' },
-      { id:6, fullName:'Meera Gupta',   username:'meera',  email:'meera@example.com',  phoneNumber:'8234567890', role:'MEMBER',    savingsAmount:11000, loanAmount:8000,  status:'ACTIVE', joinedDate:'2019-08-12' }
+      { id:1, fullName:'Priya Sharma',     username:'priya',  email:'priya@example.com',       phoneNumber:'9876543210', role:'PRESIDENT',         savingsAmount:15000, loanAmount:0,     status:'ACTIVE', joinedDate:'2019-01-15' },
+      { id:2, fullName:'Sunita Devi',      username:'sunita', email:'sunita@example.com',      phoneNumber:'9988776655', role:'TREASURER',         savingsAmount:12000, loanAmount:5000,  status:'ACTIVE', joinedDate:'2019-01-15' },
+      { id:3, fullName:'Meena Patel',      username:'meena',  email:'meena@example.com',       phoneNumber:'9234567801', role:'SECRETARY',         savingsAmount:6500,  loanAmount:8000,  status:'ACTIVE', joinedDate:'2019-06-10' },
+      { id:4, fullName:'Neha Singh',       username:'neha',   email:'neha@example.com',        phoneNumber:'9345678912', role:'ACCOUNTANT',        savingsAmount:0,     loanAmount:0,     status:'ACTIVE', joinedDate:'2020-02-01' },
+      { id:5, fullName:'Government Officer', username:'govoff', email:'govoff@example.com',    phoneNumber:'9456789023', role:'GOVERNMENT_OFFICER', savingsAmount:0,  loanAmount:0,     status:'ACTIVE', joinedDate:'2024-01-01' },
+      { id:6, fullName:'Kavita Patel',     username:'kavita', email:'kavita@example.com',      phoneNumber:'9123456780', role:'MEMBER',            savingsAmount:8000,  loanAmount:10000, status:'ACTIVE', joinedDate:'2019-03-20' },
+      { id:7, fullName:'Rekha Verma',      username:'rekha',  email:'rekha@example.com',       phoneNumber:'9012345678', role:'MEMBER',            savingsAmount:9500,  loanAmount:0,     status:'ACTIVE', joinedDate:'2020-01-10' },
+      { id:8, fullName:'Anjali Singh',     username:'anjali', email:'anjali@example.com',      phoneNumber:'8123456789', role:'MEMBER',            savingsAmount:7200,  loanAmount:3000,  status:'INACTIVE', joinedDate:'2020-06-05' },
+      { id:9, fullName:'Meera Gupta',      username:'meera',  email:'meera@example.com',       phoneNumber:'8234567890', role:'MEMBER',            savingsAmount:11000, loanAmount:8000,  status:'ACTIVE', joinedDate:'2019-08-12' }
     ];
   }
 </script>

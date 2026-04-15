@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accountant Desk - SHG Financial Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/theme.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" th:href="@{/css/responsive.css}">
+</head>
+<body>
+<nav class="navbar top-navbar px-3">
+  <div class="d-flex align-items-center gap-3">
+    <button class="btn btn-link text-white p-0 d-md-none" id="sidebar-toggle"><i class="bi bi-list fs-4"></i></button>
+    <a href="/dashboard" class="navbar-brand-custom"><i class="bi bi-people-fill"></i> SHG Tracker</a>
+  </div>
+  <div class="d-flex align-items-center gap-3 ms-auto">
+    <button class="btn btn-link text-white p-0" data-action="toggle-dark"><i class="bi bi-moon-stars"></i></button>
+    <div class="dropdown">
+      <button class="btn btn-link text-white p-0 d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+        <div class="avatar" id="nav-user-initials" style="width:34px;height:34px;font-size:.85rem">U</div>
+        <div class="d-none d-md-block text-start">
+          <div style="font-size:.85rem;font-weight:600;color:#fff" id="nav-user-name">User</div>
+          <div style="font-size:.72rem;color:#a7f3d0;text-transform:capitalize" id="nav-user-role">role</div>
+        </div>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item text-danger" href="#" data-action="logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<nav class="sidebar" id="sidebar">
+  <div class="pt-3">
+    <div class="nav-section">Main</div>
+    <a href="/dashboard" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <div class="nav-section mt-2">Finance</div>
+    <a href="/finance/accountant" class="nav-link active" data-role-requires="president,accountant,treasurer"><i class="bi bi-journal-check"></i> Accountant Desk</a>
+    <a href="/finance/transactions" class="nav-link" data-role-requires="president,accountant,treasurer,secretary"><i class="bi bi-arrow-left-right"></i> Transactions</a>
+    <a href="/finance/reports" class="nav-link" data-role-requires="president,accountant,treasurer,secretary"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <a href="/finance/analytics" class="nav-link" data-role-requires="president,accountant,treasurer"><i class="bi bi-pie-chart"></i> Analytics</a>
+    <div class="nav-section mt-2">Community</div>
+    <a href="/discussion/list" class="nav-link"><i class="bi bi-chat-dots"></i> Discussions</a>
+  </div>
+</nav>
+
+<main class="main-content">
+  <div class="breadcrumb-custom">
+    <a href="/dashboard"><i class="bi bi-house me-1"></i>Home</a>
+    <span class="sep">/</span><span>Finance</span><span class="sep">/</span><span>Accountant Desk</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <h4><i class="bi bi-journal-check me-2"></i>Accountant Desk</h4>
+      <p class="text-muted mb-0">Review each member account, monitor risk, manage loans, and prepare reports from one workspace.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn-outline-custom" id="accountant-export-btn"><i class="bi bi-download"></i> Export Accounts</button>
+      <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#loanModal"><i class="bi bi-cash-stack"></i> Issue Loan</button>
+      <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#repaymentModal"><i class="bi bi-wallet2"></i> Record Repayment</button>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+      <div class="stat-card success">
+        <div class="stat-icon" style="background:#d1fae5"><i class="bi bi-safe2" style="color:#16a34a"></i></div>
+        <div><div class="stat-value" id="acc-group-balance">Rs. 0</div><div class="stat-label">Group Balance</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card warning">
+        <div class="stat-icon" style="background:#fef3c7"><i class="bi bi-cash-coin" style="color:#d97706"></i></div>
+        <div><div class="stat-value" id="acc-outstanding">Rs. 0</div><div class="stat-label">Outstanding Loans</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card info">
+        <div class="stat-icon" style="background:#dbeafe"><i class="bi bi-people" style="color:#2563eb"></i></div>
+        <div><div class="stat-value" id="acc-overdue">0</div><div class="stat-label">Overdue Members</div></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card danger">
+        <div class="stat-icon" style="background:#fee2e2"><i class="bi bi-activity" style="color:#dc2626"></i></div>
+        <div><div class="stat-value" id="acc-pending">0</div><div class="stat-label">Pending Reviews</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">
+      <div class="content-card">
+        <div class="card-title-bar">
+          <h5><i class="bi bi-people me-2"></i>Member Account Monitoring</h5>
+          <span class="badge-custom badge-approved" id="portfolio-health">Stable</span>
+        </div>
+        <div class="filter-bar accountant-filter-bar">
+          <div class="flex-grow-1">
+            <label class="form-label">Search member</label>
+            <input type="text" class="form-control" id="account-search" placeholder="Search by member or role">
+          </div>
+          <div>
+            <label class="form-label">Loan status</label>
+            <select class="form-select" id="account-loan-filter">
+              <option value="">All</option>
+              <option value="Overdue">Overdue</option>
+              <option value="Monitoring">Monitoring</option>
+              <option value="On Track">On Track</option>
+              <option value="No Active Loan">No Active Loan</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Account health</label>
+            <select class="form-select" id="account-health-filter">
+              <option value="">All</option>
+              <option value="High">High Risk</option>
+              <option value="Medium">Medium Risk</option>
+              <option value="Healthy">Healthy</option>
+              <option value="Normal">Normal</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table-custom w-100">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Savings</th>
+                <th>Outstanding Loan</th>
+                <th>Net Position</th>
+                <th>Loan Status</th>
+                <th>Last Activity</th>
+              </tr>
+            </thead>
+            <tbody id="accountant-member-body">
+              <tr><td colspan="6" class="text-center py-3"><div class="spinner-border spinner-border-sm"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-title-bar">
+          <h5><i class="bi bi-graph-up-arrow me-2"></i>Reporting Snapshot</h5>
+          <button class="btn-outline-custom btn-sm" id="report-export-btn"><i class="bi bi-file-earmark-spreadsheet"></i> Export Report</button>
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="mini-panel">
+              <div class="mini-panel-title">Top Savers</div>
+              <div id="top-savers-list" class="stack-list"></div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mini-panel">
+              <div class="mini-panel-title">Top Borrowers</div>
+              <div id="top-borrowers-list" class="stack-list"></div>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table-custom w-100">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Savings</th>
+                <th>Loans Issued</th>
+                <th>Repayments</th>
+                <th>Expenses</th>
+              </tr>
+            </thead>
+            <tbody id="accountant-report-body">
+              <tr><td colspan="5" class="text-center text-muted py-3">Loading report data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="content-card">
+        <div class="card-title-bar">
+          <h5><i class="bi bi-bell me-2"></i>Action Alerts</h5>
+        </div>
+        <div id="accountant-alerts" class="stack-list">
+          <div class="text-muted small">Loading alerts...</div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-title-bar">
+          <h5><i class="bi bi-clock-history me-2"></i>Recent Ledger Activity</h5>
+        </div>
+        <div id="recent-activity-list" class="stack-list">
+          <div class="text-muted small">Loading recent entries...</div>
+        </div>
+      </div>
+
+      <div class="content-card">
+        <div class="card-title-bar">
+          <h5><i class="bi bi-check2-square me-2"></i>Loan Portfolio</h5>
+        </div>
+        <div class="mini-panel compact">
+          <div class="metric-row"><span>Members with loans</span><strong id="loan-members-count">0</strong></div>
+          <div class="metric-row"><span>Collections this month</span><strong id="loan-collections">Rs. 0</strong></div>
+          <div class="metric-row"><span>High-risk accounts</span><strong id="loan-high-risk">0</strong></div>
+          <div class="metric-row"><span>Portfolio health</span><strong id="loan-portfolio-health">Stable</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="modal fade" id="loanModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-cash-stack me-2"></i>Issue Loan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="loan-form" novalidate>
+          <div class="mb-3">
+            <label class="form-label">Member *</label>
+            <select class="form-select" id="loan-member" required></select>
+            <div class="invalid-feedback">Please choose a member.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Amount *</label>
+            <input type="number" class="form-control" id="loan-amount" min="1" step="0.01" required>
+            <div class="invalid-feedback">Please enter a valid amount.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date *</label>
+            <input type="date" class="form-control" id="loan-date" required>
+            <div class="invalid-feedback">Please select a date.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Purpose</label>
+            <input type="text" class="form-control" id="loan-description" placeholder="Business expansion, emergency support, etc.">
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-primary-custom">Issue Loan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="repaymentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title"><i class="bi bi-wallet2 me-2"></i>Record Repayment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="repayment-form" novalidate>
+          <div class="mb-3">
+            <label class="form-label">Member *</label>
+            <select class="form-select" id="repayment-member" required></select>
+            <div class="invalid-feedback">Please choose a member.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Amount *</label>
+            <input type="number" class="form-control" id="repayment-amount" min="1" step="0.01" required>
+            <div class="invalid-feedback">Please enter a valid amount.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date *</label>
+            <input type="date" class="form-control" id="repayment-date" required>
+            <div class="invalid-feedback">Please select a date.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Note</label>
+            <input type="text" class="form-control" id="repayment-description" placeholder="Cash collected during meeting, bank deposit, etc.">
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-primary-custom">Save Repayment</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/utils.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/accountant.js}"></script>
+</body>
+</html>

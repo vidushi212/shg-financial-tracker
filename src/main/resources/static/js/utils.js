@@ -38,6 +38,14 @@ const Utils = (() => {
     return str && str.length > max ? str.slice(0, max) + '…' : str;
   }
 
+  /** Convert text to title case */
+  function titleCase(text) {
+    if (!text) return '';
+    return String(text).split(' ').map(word => {
+      return word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '';
+    }).join(' ');
+  }
+
   /** Escape HTML to prevent XSS */
   function escapeHtml(str) {
     const d = document.createElement('div');
@@ -76,5 +84,5 @@ const Utils = (() => {
     };
   }
 
-  return { formatCurrency, formatDate, debounce, initials, truncate, escapeHtml, uid, downloadCSV, paginate };
+  return { formatCurrency, formatDate, debounce, initials, truncate, titleCase, escapeHtml, uid, downloadCSV, paginate };
 })();

@@ -12,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,13 +37,11 @@ public class DashboardService {
                 .orElse(null);
 
         List<Transaction> transactions = transactionRepository.findAll();
-        double totalSavings = transactions.stream()
-                .filter(transaction -> "SAVINGS".equalsIgnoreCase(transaction.getType()))
-                .mapToDouble(Transaction::getAmount)
+        double totalSavings = memberRepository.findAll().stream()
+                .mapToDouble(member -> member.getSavingsAmount() == null ? 0.0 : member.getSavingsAmount())
                 .sum();
-        double totalLoans = transactions.stream()
-                .filter(transaction -> "LOAN".equalsIgnoreCase(transaction.getType()))
-                .mapToDouble(Transaction::getAmount)
+        double totalLoans = memberRepository.findAll().stream()
+                .mapToDouble(member -> member.getLoanAmount() == null ? 0.0 : member.getLoanAmount())
                 .sum();
 
         return Map.of(
@@ -55,16 +54,22 @@ public class DashboardService {
     }
 
     public List<Map<String, Object>> getDashboardMembers() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
         List<SHGMember> members = memberRepository.findAll();
         return members.stream()
                 .sorted(Comparator.comparing(SHGMember::getFullName))
-                .map(member -> Map.<String, Object>of(
-                        "id", member.getId(),
-                        "name", member.getFullName(),
-                        "role", member.getRole(),
-                        "savings", member.getSavingsAmount(),
-                        "loans", member.getLoanAmount(),
-                        "active", "ACTIVE".equalsIgnoreCase(member.getStatus()) || "APPROVED".equalsIgnoreCase(member.getStatus())))
+                .map(member -> Map.<String, Object>ofEntries(
+                        Map.entry("id", member.getId()),
+                        Map.entry("username", Objects.toString(member.getUsername(), "")),
+                        Map.entry("name", Objects.toString(member.getFullName(), "")),
+                        Map.entry("role", Objects.toString(member.getRole(), "")),
+                        Map.entry("email", Objects.toString(member.getEmail(), "")),
+                        Map.entry("phoneNumber", Objects.toString(member.getPhoneNumber(), "")),
+                        Map.entry("status", Objects.toString(member.getStatus(), "ACTIVE")),
+                        Map.entry("joinedDate", member.getJoinedDate() == null ? "" : member.getJoinedDate().format(formatter)),
+                        Map.entry("savings", member.getSavingsAmount()),
+                        Map.entry("loans", member.getLoanAmount()),
+                        Map.entry("active", "ACTIVE".equalsIgnoreCase(member.getStatus()) || "APPROVED".equalsIgnoreCase(member.getStatus()))))
                 .collect(Collectors.toList());
     }
 }

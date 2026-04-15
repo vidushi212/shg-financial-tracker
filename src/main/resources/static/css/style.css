@@ -451,6 +451,79 @@ a:hover { text-decoration: underline; }
   height: 280px;
 }
 
+.mini-panel {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 1rem;
+  height: 100%;
+}
+
+.mini-panel.compact {
+  padding: .75rem 1rem;
+}
+
+.mini-panel-title {
+  font-size: .8rem;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: .75rem;
+  font-weight: 600;
+}
+
+.stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.activity-item {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: .85rem 1rem;
+  background: var(--white);
+}
+
+.activity-item.high {
+  border-left: 4px solid var(--danger);
+}
+
+.activity-item.medium {
+  border-left: 4px solid var(--warning);
+}
+
+.activity-title {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.activity-meta {
+  color: var(--gray-500);
+  font-size: .82rem;
+  margin-top: .2rem;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .55rem 0;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.metric-row:last-child {
+  border-bottom: none;
+}
+
+.accountant-filter-bar {
+  box-shadow: none;
+  padding: 0 0 1rem;
+  margin-bottom: 1rem;
+  background: transparent;
+}
+
 /* ==========================================================
    PAGE HEADER
    ========================================================== */

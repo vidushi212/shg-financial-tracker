@@ -130,6 +130,7 @@ function renderSchemes(schemes) {
           <span class="badge-custom badge-savings">${Utils.escapeHtml(s.type||'Scheme')}</span>
         </div>
         <p class="text-muted small mb-2">${Utils.escapeHtml(s.description||'')}</p>
+        <div class="small mb-1"><strong>Issuer:</strong> ${Utils.escapeHtml(s.issuer||'—')}</div>
         <div class="small mb-1"><strong>Eligibility:</strong> ${Utils.escapeHtml(s.eligibility||'—')}</div>
         <div class="small mb-3"><strong>Benefit:</strong> ${Utils.escapeHtml(s.benefit||'—')}</div>
         <button class="btn-primary-custom apply-scheme-btn" data-scheme-idx="${i}">

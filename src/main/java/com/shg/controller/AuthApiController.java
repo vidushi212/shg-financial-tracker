@@ -94,6 +94,10 @@ public class AuthApiController {
                 return "President";
             case "treasurer":
                 return "Treasurer";
+            case "secretary":
+                return "Secretary";
+            case "accountant":
+                return "Accountant";
             case "broker":
                 return "Broker";
             case "admin":

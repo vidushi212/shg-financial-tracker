@@ -78,12 +78,13 @@ function renderTransactions() {
 function updateBalanceSummary() {
   const savings = _allTx.filter(t => t.type === 'Savings').reduce((s, t) => s + Number(t.amount), 0);
   const loans   = _allTx.filter(t => t.type === 'Loan')   .reduce((s, t) => s + Number(t.amount), 0);
+  const repayment = _allTx.filter(t => t.type === 'Repayment').reduce((s, t) => s + Number(t.amount), 0);
   const expense = _allTx.filter(t => t.type === 'Expense').reduce((s, t) => s + Number(t.amount), 0);
 
   _setEl('balance-savings', Utils.formatCurrency(savings));
-  _setEl('balance-loans',   Utils.formatCurrency(loans));
+  _setEl('balance-loans',   Utils.formatCurrency(loans - repayment));
   _setEl('balance-expense', Utils.formatCurrency(expense));
-  _setEl('balance-net',     Utils.formatCurrency(savings - loans - expense));
+  _setEl('balance-net',     Utils.formatCurrency(savings + repayment - loans - expense));
 }
 
 function bindTransactionFilters() {

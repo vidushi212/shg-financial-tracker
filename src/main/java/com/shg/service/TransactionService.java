@@ -5,9 +5,13 @@ import com.shg.model.SHGGroup;
 import com.shg.model.SHGMember;
 import com.shg.model.Transaction;
 import com.shg.factory.FinancialRecordFactory;
+import com.shg.observer.BalanceObserver;
+import com.shg.observer.BalanceSubject;
 import com.shg.repository.SHGGroupRepository;
 import com.shg.repository.SHGMemberRepository;
 import com.shg.repository.TransactionRepository;
+import com.shg.state.TransactionStateManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,12 +24,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class TransactionService {
+public class TransactionService implements BalanceSubject {
 
     private final TransactionRepository transactionRepository;
     private final SHGGroupRepository shgGroupRepository;
     private final SHGMemberRepository shgMemberRepository;
     private final FinancialRecordFactory financialRecordFactory;
+    
+    private final List<BalanceObserver> observers = new ArrayList<>();
+    
+    @Autowired(required = false)
+    private TransactionStateManager stateManager;
 
     public TransactionService(TransactionRepository transactionRepository,
                               SHGGroupRepository shgGroupRepository,
@@ -55,6 +64,7 @@ public class TransactionService {
             double currentBalance = group.getTotalBalance() == null ? 0.0 : group.getTotalBalance();
             switch (transaction.getType()) {
                 case "SAVINGS":
+                case "REPAYMENT":
                     group.setTotalBalance(currentBalance + transaction.getAmount());
                     break;
                 case "EXPENSE":
@@ -74,6 +84,8 @@ public class TransactionService {
                 member.setSavingsAmount(member.getSavingsAmount() + transaction.getAmount());
             } else if ("LOAN".equals(transaction.getType())) {
                 member.setLoanAmount(member.getLoanAmount() + transaction.getAmount());
+            } else if ("REPAYMENT".equals(transaction.getType())) {
+                member.setLoanAmount(Math.max(0.0, member.getLoanAmount() - transaction.getAmount()));
             }
             member.setUpdatedAt(LocalDateTime.now());
             shgMemberRepository.save(member);
@@ -147,5 +159,217 @@ public class TransactionService {
             return "";
         }
         return value.trim().toUpperCase(Locale.ENGLISH);
+    }
+
+    // ============ BalanceSubject Implementation (Observer Pattern) ============
+
+    @Override
+    public void addObserver(BalanceObserver observer) {
+        if (!observers.contains(observer)) {
+            observers.add(observer);
+            System.out.println("Observer registered: " + observer.getClass().getSimpleName());
+        }
+    }
+
+    @Override
+    public void removeObserver(BalanceObserver observer) {
+        if (observers.remove(observer)) {
+            System.out.println("Observer removed: " + observer.getClass().getSimpleName());
+        }
+    }
+
+    @Override
+    public void notifyBalanceChange(Object group, double oldBalance, double newBalance, Object changedBy) {
+        if (group instanceof SHGGroup && changedBy instanceof SHGMember) {
+            SHGGroup shgGroup = (SHGGroup) group;
+            SHGMember member = (SHGMember) changedBy;
+            
+            for (BalanceObserver observer : observers) {
+                try {
+                    observer.onBalanceChanged(shgGroup, oldBalance, newBalance, member);
+                } catch (Exception e) {
+                    System.err.println("Error notifying observer " + observer.getClass().getSimpleName() + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyMemberBalanceChange(Object member, double savingsChange, double loanChange, Object changedBy) {
+        if (member instanceof SHGMember && changedBy instanceof SHGMember) {
+            SHGMember shgMember = (SHGMember) member;
+            SHGMember modifier = (SHGMember) changedBy;
+            
+            for (BalanceObserver observer : observers) {
+                try {
+                    observer.onMemberBalanceChanged(shgMember, savingsChange, loanChange, modifier);
+                } catch (Exception e) {
+                    System.err.println("Error notifying observer " + observer.getClass().getSimpleName() + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyTransactionPending(Long transactionId, double amount, Object member) {
+        if (member instanceof SHGMember) {
+            SHGMember shgMember = (SHGMember) member;
+            
+            for (BalanceObserver observer : observers) {
+                try {
+                    observer.onTransactionPending(transactionId, amount, shgMember);
+                } catch (Exception e) {
+                    System.err.println("Error notifying observer " + observer.getClass().getSimpleName() + ": " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    // ============ Role-Based Transaction Management Methods ============
+
+    /**
+     * Delete transaction - only ACCOUNTANT and PRESIDENT can delete
+     */
+    public void deleteTransaction(Long transactionId) {
+        Optional<Transaction> transaction = transactionRepository.findById(transactionId);
+        if (transaction.isPresent()) {
+            // Reverse the balance changes
+            Transaction trans = transaction.get();
+            reverseAggregates(trans);
+            transactionRepository.deleteById(transactionId);
+            System.out.println("Transaction " + transactionId + " deleted successfully");
+        }
+    }
+
+    /**
+     * Reverse balance changes for a transaction
+     */
+    private void reverseAggregates(Transaction transaction) {
+        SHGGroup group = transaction.getShgGroup();
+        if (group != null) {
+            double currentBalance = group.getTotalBalance() == null ? 0.0 : group.getTotalBalance();
+            switch (transaction.getType()) {
+                case "SAVINGS":
+                case "REPAYMENT":
+                    group.setTotalBalance(currentBalance - transaction.getAmount());
+                    break;
+                case "EXPENSE":
+                case "LOAN":
+                    group.setTotalBalance(currentBalance + transaction.getAmount());
+                    break;
+                default:
+                    break;
+            }
+            group.setUpdatedAt(LocalDateTime.now());
+            shgGroupRepository.save(group);
+        }
+
+        SHGMember member = transaction.getMember();
+        if (member != null) {
+            if ("SAVINGS".equals(transaction.getType())) {
+                member.setSavingsAmount(member.getSavingsAmount() - transaction.getAmount());
+            } else if ("LOAN".equals(transaction.getType())) {
+                member.setLoanAmount(member.getLoanAmount() - transaction.getAmount());
+            } else if ("REPAYMENT".equals(transaction.getType())) {
+                member.setLoanAmount(member.getLoanAmount() + transaction.getAmount());
+            }
+            member.setUpdatedAt(LocalDateTime.now());
+            shgMemberRepository.save(member);
+        }
+    }
+
+    /**
+     * Approve a transaction (state transition)
+     */
+    public void approveTransaction(Long transactionId, SHGMember approver) {
+        Optional<Transaction> transaction = transactionRepository.findById(transactionId);
+        if (transaction.isPresent()) {
+            if (stateManager != null) {
+                stateManager.approveTransaction(transaction.get(), approver);
+                transactionRepository.save(transaction.get());
+            }
+        }
+    }
+
+    /**
+     * Reject a transaction (state transition)
+     */
+    public void rejectTransaction(Long transactionId, SHGMember rejector, String reason) {
+        Optional<Transaction> transaction = transactionRepository.findById(transactionId);
+        if (transaction.isPresent()) {
+            if (stateManager != null) {
+                stateManager.rejectTransaction(transaction.get(), rejector, reason);
+                transactionRepository.save(transaction.get());
+            }
+        }
+    }
+
+    /**
+     * Apply transaction to balances (used by state handler)
+     */
+    public void applyTransactionToBalances(Transaction transaction) {
+        SHGMember recordedByMember = null;
+        // This would need to be set from context - for now we use the first group member
+        List<SHGMember> members = shgMemberRepository.findAll();
+        if (!members.isEmpty()) {
+            recordedByMember = members.get(0);
+        }
+        
+        updateAggregates(transaction, recordedByMember);
+    }
+
+    /**
+     * Update aggregates with observer notification
+     */
+    private void updateAggregates(Transaction transaction, SHGMember changedBy) {
+        SHGGroup group = transaction.getShgGroup();
+        if (group != null && changedBy != null) {
+            double oldBalance = group.getTotalBalance() == null ? 0.0 : group.getTotalBalance();
+            double newBalance = oldBalance;
+            
+            switch (transaction.getType()) {
+                case "SAVINGS":
+                case "REPAYMENT":
+                    newBalance = oldBalance + transaction.getAmount();
+                    group.setTotalBalance(newBalance);
+                    break;
+                case "EXPENSE":
+                case "LOAN":
+                    newBalance = oldBalance - transaction.getAmount();
+                    group.setTotalBalance(newBalance);
+                    break;
+                default:
+                    break;
+            }
+            
+            group.setUpdatedAt(LocalDateTime.now());
+            shgGroupRepository.save(group);
+            
+            // Notify observers
+            notifyBalanceChange(group, oldBalance, newBalance, changedBy);
+        }
+
+        SHGMember member = transaction.getMember();
+        if (member != null && changedBy != null) {
+            double savingsChange = 0;
+            double loanChange = 0;
+            
+            if ("SAVINGS".equals(transaction.getType())) {
+                savingsChange = transaction.getAmount();
+                member.setSavingsAmount(member.getSavingsAmount() + transaction.getAmount());
+            } else if ("LOAN".equals(transaction.getType())) {
+                loanChange = transaction.getAmount();
+                member.setLoanAmount(member.getLoanAmount() + transaction.getAmount());
+            } else if ("REPAYMENT".equals(transaction.getType())) {
+                loanChange = -transaction.getAmount();
+                member.setLoanAmount(Math.max(0.0, member.getLoanAmount() - transaction.getAmount()));
+            }
+            
+            member.setUpdatedAt(LocalDateTime.now());
+            shgMemberRepository.save(member);
+            
+            // Notify observers
+            notifyMemberBalanceChange(member, savingsChange, loanChange, changedBy);
+        }
     }
 }

@@ -53,6 +53,8 @@ public class DemoDataLoader {
                     "lakshmi@shg.local", "9876500002", group, "ACTIVE");
             SHGMember secretary = createMember("secretary.meena", "password123", "Meena Patel", "Secretary",
                     "meena@shg.local", "9876500003", group, "ACTIVE");
+            SHGMember accountant = createMember("accountant.neha", "password123", "Neha Singh", "Accountant",
+                    "neha@shg.local", "9876500009", group, "ACTIVE");
             SHGMember memberOne = createMember("member.anita", "password123", "Anita Rao", "Member",
                     "anita@shg.local", "9876500004", group, "ACTIVE");
             SHGMember memberTwo = createMember("member.savita", "password123", "Savita Kumari", "Member",
@@ -61,14 +63,18 @@ public class DemoDataLoader {
                     "admin@shg.local", "9876500006", group, "APPROVED");
             SHGMember broker = createMember("broker.raj", "broker123", "Raj Kumar", "Broker",
                     "raj@rk-investments.local", "9876500007", group, "PENDING");
+            SHGMember governmentOfficer = createMember("government.officer", "gov123", "Government Officer", "Government Officer",
+                    "govt@shg.local", "9876500008", group, "ACTIVE");
 
             memberRepository.save(president);
             memberRepository.save(treasurer);
             memberRepository.save(secretary);
+            memberRepository.save(accountant);
             memberRepository.save(memberOne);
             memberRepository.save(memberTwo);
             memberRepository.save(admin);
             memberRepository.save(broker);
+            memberRepository.save(governmentOfficer);
 
             transactionRepository.save(createTransaction("SAVINGS", 5000, "Monthly savings", "Priya Sharma", group, president, LocalDateTime.now().minusMonths(2).withDayOfMonth(3)));
             transactionRepository.save(createTransaction("LOAN", 10000, "Business loan for tailoring unit", "Lakshmi Devi", group, president, LocalDateTime.now().minusMonths(2).withDayOfMonth(8)));
@@ -107,6 +113,21 @@ public class DemoDataLoader {
             janDhan.setDescription("Basic banking access for SHG members and households.");
             janDhan.setEligibility("All eligible Indian citizens.");
             governmentSchemeRepository.save(janDhan);
+
+            GovernmentScheme mudra = new GovernmentScheme("PM Mudra Yojana", 1000000.0, 9.0, 36, "Ministry of Finance");
+            mudra.setDescription("Collateral-free loans for small SHG businesses and entrepreneurs.");
+            mudra.setEligibility("SHG members with viable micro-enterprise activities.");
+            governmentSchemeRepository.save(mudra);
+
+            GovernmentScheme surakshaBima = new GovernmentScheme("PM Suraksha Bima Yojana", 0.0, 0.0, 12, "Ministry of Finance");
+            surakshaBima.setDescription("Affordable accident insurance coverage for SHG members.");
+            surakshaBima.setEligibility("Aged 18–70 with a linked savings account.");
+            governmentSchemeRepository.save(surakshaBima);
+
+            GovernmentScheme atalPension = new GovernmentScheme("Atal Pension Yojana", 0.0, 0.0, 240, "Ministry of Finance");
+            atalPension.setDescription("Pension support for informal sector workers and SHG members.");
+            atalPension.setEligibility("Members aged 18–40 with a savings account and Aadhaar linkage.");
+            governmentSchemeRepository.save(atalPension);
 
             Recommendation recommendationOne = new Recommendation("Increase Monthly Savings", "Savings", "High", 12000.0, "Recommendation Engine");
             recommendationOne.setDescription("Current balance growth is below the six-month projection. Raising monthly savings will improve resilience.");

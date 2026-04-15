@@ -29,6 +29,12 @@ public class Transaction {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
+    
+    @Column(nullable = false)
+    private String state = "PENDING";  // PENDING, APPROVED, REJECTED
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shg_group_id", nullable = false)
     private SHGGroup shgGroup;
@@ -68,6 +74,12 @@ public class Transaction {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getState() { return state; }
+    public void setState(String state) { this.state = state; }
 
     public SHGGroup getShgGroup() { return shgGroup; }
     public void setShgGroup(SHGGroup shgGroup) { this.shgGroup = shgGroup; }

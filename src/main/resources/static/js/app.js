@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const userInitEl  = document.getElementById('nav-user-initials');
   if (userNameEl && typeof Auth !== 'undefined') {
     userNameEl.textContent  = Auth.displayName();
-    if (userRoleEl) userRoleEl.textContent = Auth.role();
+    if (userRoleEl) userRoleEl.textContent = Auth.displayRole ? Auth.displayRole() : Utils.titleCase(Auth.role());
     if (userInitEl) userInitEl.textContent = Utils.initials(Auth.displayName());
   }
 
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof Auth !== 'undefined') {
     const userRole = Auth.role();
     document.querySelectorAll('[data-role-requires]').forEach(el => {
-      const required = el.dataset.roleRequires.split(',').map(r => r.trim());
+      const required = el.dataset.roleRequires.split(',').map(r => r.trim().toLowerCase());
       if (!required.includes(userRole)) el.style.display = 'none';
     });
   }

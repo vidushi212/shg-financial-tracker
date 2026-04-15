@@ -30,6 +30,11 @@ public class WebController {
         return "finance/reports";
     }
 
+    @GetMapping("/finance/accountant")
+    public String accountant() {
+        return "finance/accountant";
+    }
+
     @GetMapping("/finance/analytics")
     public String analytics() {
         return "finance/analytics";

@@ -51,13 +51,14 @@
   <div class="pt-3">
     <div class="nav-section">Main</div>
     <a href="/dashboard" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="/groups" class="nav-link"><i class="bi bi-diagram-3"></i> Groups</a>
-    <a href="/members" class="nav-link"><i class="bi bi-people"></i> Members</a>
+    <a href="/groups" class="nav-link" data-role-requires="president,secretary"><i class="bi bi-diagram-3"></i> Groups</a>
+    <a href="/members" class="nav-link" data-role-requires="president,secretary"><i class="bi bi-people"></i> Members</a>
 
     <div class="nav-section mt-2">Finance</div>
-    <a href="/finance/transactions" class="nav-link"><i class="bi bi-arrow-left-right"></i> Transactions</a>
-    <a href="/finance/reports" class="nav-link"><i class="bi bi-bar-chart-line"></i> Reports</a>
-    <a href="/finance/analytics" class="nav-link"><i class="bi bi-pie-chart"></i> Analytics</a>
+    <a href="/finance/accountant" class="nav-link" data-role-requires="president,accountant,treasurer"><i class="bi bi-journal-check"></i> Accountant Desk</a>
+    <a href="/finance/transactions" class="nav-link" data-role-requires="president,accountant,treasurer,secretary"><i class="bi bi-arrow-left-right"></i> Transactions</a>
+    <a href="/finance/reports" class="nav-link" data-role-requires="president,accountant,treasurer,secretary"><i class="bi bi-bar-chart-line"></i> Reports</a>
+    <a href="/finance/analytics" class="nav-link" data-role-requires="president,accountant,treasurer"><i class="bi bi-pie-chart"></i> Analytics</a>
 
     <div class="nav-section mt-2">Advisory</div>
     <a href="/advisory/investments" class="nav-link"><i class="bi bi-bank"></i> Investment Plans</a>
@@ -67,10 +68,10 @@
     <div class="nav-section mt-2">Community</div>
     <a href="/discussion/list" class="nav-link"><i class="bi bi-chat-dots"></i> Discussions</a>
 
-    <div class="nav-section mt-2" data-role-requires="admin">Admin</div>
-    <a href="/admin/brokers" class="nav-link" data-role-requires="admin"><i class="bi bi-person-badge"></i> Broker Verification</a>
-    <a href="/admin/statistics" class="nav-link" data-role-requires="admin"><i class="bi bi-graph-up"></i> Statistics</a>
-    <a href="/admin/settings" class="nav-link" data-role-requires="admin"><i class="bi bi-gear"></i> Settings</a>
+    <div class="nav-section mt-2" data-role-requires="admin,president">Admin</div>
+    <a href="/admin/brokers" class="nav-link" data-role-requires="admin,president"><i class="bi bi-person-badge"></i> Broker Verification</a>
+    <a href="/admin/statistics" class="nav-link" data-role-requires="admin,president"><i class="bi bi-graph-up"></i> Statistics</a>
+    <a href="/admin/settings" class="nav-link" data-role-requires="admin,president"><i class="bi bi-gear"></i> Settings</a>
   </div>
 </nav>
 
@@ -86,8 +87,12 @@
   <!-- Page header -->
   <div class="page-header">
     <h4>Welcome back, <span id="welcome-name">User</span>! 👋</h4>
-    <button class="btn-primary-custom" onclick="window.location.href='/finance/transactions'">
+    <p class="text-muted mb-3" id="role-welcome-text"></p>
+    <button id="new-transaction-btn" class="btn-primary-custom" data-role-requires="president,accountant,treasurer,secretary" onclick="window.location.href='/finance/transactions'">
       <i class="bi bi-plus-circle"></i> New Transaction
+    </button>
+    <button class="btn-outline-custom" data-role-requires="president,accountant,treasurer" onclick="window.location.href='/finance/accountant'">
+      <i class="bi bi-journal-check"></i> Accountant Desk
     </button>
   </div>
 
@@ -107,7 +112,7 @@
 
   <!-- Stat Cards Row -->
   <div class="row g-3 mb-3">
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-3" data-role-requires="president,accountant,treasurer,secretary">
       <div class="stat-card success">
         <div class="stat-icon" style="background:#d1fae5"><i class="bi bi-piggy-bank" style="color:#16a34a"></i></div>
         <div>
@@ -116,7 +121,7 @@
         </div>
       </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-3" data-role-requires="president,accountant,treasurer,secretary">
       <div class="stat-card warning">
         <div class="stat-icon" style="background:#fef3c7"><i class="bi bi-cash-coin" style="color:#d97706"></i></div>
         <div>
@@ -134,13 +139,23 @@
         </div>
       </div>
     </div>
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-3" data-role-requires="president,accountant,treasurer,secretary">
       <div class="stat-card info">
         <div class="stat-icon" style="background:#e0f2fe"><i class="bi bi-clipboard-data" style="color:#0891b2"></i></div>
         <div>
           <div class="stat-value">24</div>
           <div class="stat-label">This Month Tx</div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-card mb-3" data-role-requires="government officer">
+    <div class="d-flex align-items-center gap-3">
+      <div class="avatar" style="background:#10b981">GO</div>
+      <div>
+        <h5 class="mb-1">Government Officer Dashboard</h5>
+        <p class="mb-0 text-muted">Your access is focused on advisory, schemes and group oversight. Finance transaction widgets are hidden for your role.</p>
       </div>
     </div>
   </div>
@@ -170,20 +185,27 @@
   <!-- Quick Links -->
   <div class="row g-3">
     <div class="col-md-4">
-      <div class="content-card text-center" style="cursor:pointer" onclick="location.href='/finance/reports'">
+      <div class="content-card text-center" style="cursor:pointer" onclick="location.href='/finance/accountant'" data-role-requires="president,accountant,treasurer">
+        <i class="bi bi-journal-check fs-2 text-primary mb-2 d-block"></i>
+        <strong>Accountant Desk</strong>
+        <p class="text-muted small mb-0">Review member accounts, issue loans and monitor repayments</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="content-card text-center" style="cursor:pointer" onclick="location.href='/finance/reports'" data-role-requires="president,accountant,treasurer,secretary">
         <i class="bi bi-bar-chart-line fs-2 text-success mb-2 d-block"></i>
         <strong>View Reports</strong>
         <p class="text-muted small mb-0">Monthly financial summaries</p>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="content-card text-center" style="cursor:pointer" onclick="location.href='/advisory/investments'">
-        <i class="bi bi-bank fs-2 mb-2 d-block" style="color:var(--secondary)"></i>
-        <strong>Investment Plans</strong>
-        <p class="text-muted small mb-0">Browse bank & govt plans</p>
+    <div class="col-md-4" data-role-requires="president,secretary">
+      <div class="content-card text-center" style="cursor:pointer" onclick="location.href='/members'">
+        <i class="bi bi-people-fill fs-2 mb-2 d-block" style="color:var(--secondary)"></i>
+        <strong>Member Management</strong>
+        <p class="text-muted small mb-0">Review and manage SHG members</p>
       </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-4" data-role-requires="government officer,president,secretary,accountant,treasurer,member">
       <div class="content-card text-center" style="cursor:pointer" onclick="location.href='/discussion/list'">
         <i class="bi bi-chat-dots fs-2 mb-2 d-block" style="color:var(--accent)"></i>
         <strong>Discussions</strong>

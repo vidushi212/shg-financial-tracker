@@ -8,6 +8,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Populate header
   document.getElementById('welcome-name').textContent = Auth.displayName();
+  const role = Auth.role();
+  const roleText = role ? Utils.titleCase(role) : 'Member';
+  const roleWelcomeEl = document.getElementById('role-welcome-text');
+  if (roleWelcomeEl) {
+    if (role === 'government officer') {
+      roleWelcomeEl.textContent = 'Your Government Officer dashboard focuses on advisory and schemes; finance transaction widgets are hidden for your role.';
+    } else {
+      roleWelcomeEl.textContent = `You are signed in as ${roleText}.`;
+    }
+  }
 
   // Load dashboard data
   await Promise.all([loadStats(), loadMembers()]);
