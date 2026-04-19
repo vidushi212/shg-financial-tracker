@@ -18,6 +18,15 @@ public class SHGGroupService {
     public SHGGroup createSHGGroup(SHGGroup shgGroup) {
         shgGroup.setCreatedAt(LocalDateTime.now());
         shgGroup.setUpdatedAt(LocalDateTime.now());
+        if (shgGroup.getStatus() == null || shgGroup.getStatus().isBlank()) {
+            shgGroup.setStatus("ACTIVE");
+        }
+        if (shgGroup.getTotalBalance() == null) {
+            shgGroup.setTotalBalance(0.0);
+        }
+        if (shgGroup.getMonthlyContribution() == null) {
+            shgGroup.setMonthlyContribution(0.0);
+        }
         return shgGroupRepository.save(shgGroup);
     }
     
@@ -39,6 +48,9 @@ public class SHGGroupService {
             group.setDescription(updatedGroup.getDescription());
             group.setLocation(updatedGroup.getLocation());
             group.setMonthlyContribution(updatedGroup.getMonthlyContribution());
+            if (updatedGroup.getStatus() != null && !updatedGroup.getStatus().isBlank()) {
+                group.setStatus(updatedGroup.getStatus());
+            }
             group.setUpdatedAt(LocalDateTime.now());
             return shgGroupRepository.save(group);
         }).orElseThrow(() -> new RuntimeException("SHG Group not found"));

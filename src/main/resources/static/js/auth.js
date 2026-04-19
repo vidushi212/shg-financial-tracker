@@ -45,8 +45,34 @@ const Auth = (() => {
   /** Redirect already-authenticated users away from login page */
   function redirectIfLoggedIn() {
     if (isLoggedIn()) {
-      window.location.href = '/dashboard';
+      window.location.href = landingPage();
     }
+  }
+
+  function normalizeRole(value) {
+    return (value || '').toLowerCase().trim();
+  }
+
+  function landingPageForRole(role) {
+    switch (normalizeRole(role)) {
+      case 'admin':
+        return '/admin/brokers';
+      case 'accountant':
+      case 'treasurer':
+        return '/finance/accountant';
+      case 'government officer':
+        return '/advisory/schemes';
+      case 'broker':
+        return '/advisory/investments';
+      default:
+        return '/dashboard';
+    }
+  }
+
+  function landingPage() {
+    const u = getUser();
+    if (!u) return '/';
+    return u.landingPage || landingPageForRole(u.role);
   }
 
   /**
@@ -57,7 +83,7 @@ const Auth = (() => {
     const data = await API.post('/api/auth/login', { username, password });
     if (data) {
       saveUser(data);
-      window.location.href = '/dashboard';
+      window.location.href = data.landingPage || landingPageForRole(data.role);
     }
   }
 
@@ -69,19 +95,8 @@ const Auth = (() => {
     const data = await API.post('/api/auth/register', payload);
     if (data) {
       saveUser(data);
-      window.location.href = '/dashboard';
+      window.location.href = data.landingPage || landingPageForRole(data.role);
     }
-  }
-
-  /**
-   * Create a demo login session for the given role.
-   */
-  function demoLogin(role) {
-    const normalizedRole = role.toLowerCase();
-    const username = `${normalizedRole.replace(/\s+/g, '.')}-demo`;
-    const fullName = `${role.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')} Demo`;
-    saveUser({ username, fullName, role: normalizedRole, token: `demo-${normalizedRole.replace(/\s+/g, '_')}` });
-    window.location.href = '/dashboard';
   }
 
   /**
@@ -101,9 +116,24 @@ const Auth = (() => {
   /** Returns the current user's role string (lowercase) */
   function role() {
     const u = getUser();
-    return u ? (u.role || '').toLowerCase() : '';
+    return u ? normalizeRole(u.role) : '';
+  }
+
+  function hasRole(roles) {
+    const currentRole = role();
+    return roles.map(normalizeRole).includes(currentRole);
+  }
+
+  function requireRole(roles, fallbackPath) {
+    requireAuth();
+    if (!hasRole(roles)) {
+      window.location.href = fallbackPath || landingPage();
+      return false;
+    }
+    return true;
   }
 
   return { saveUser, getUser, logout, isLoggedIn, requireAuth, redirectIfLoggedIn,
-           login, register, demoLogin, displayName, role, displayRole };
+           login, register, displayName, role, displayRole, hasRole, requireRole,
+           landingPage, landingPageForRole };
 })();

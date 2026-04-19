@@ -3,12 +3,8 @@ let accountantOverview = null;
 let accountantReports = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  Auth.requireAuth();
-
-  const role = Auth.role();
-  if (!['accountant', 'president', 'treasurer'].includes(role)) {
+  if (!Auth.requireRole(['accountant', 'president', 'treasurer'])) {
     showToast('This workspace is limited to accountant-level finance roles.', 'warning');
-    window.location.href = '/dashboard';
     return;
   }
 
@@ -22,15 +18,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadAccountantDesk() {
-  const [overview, members, reports] = await Promise.all([
-    API.get('/api/accountant/overview').catch(() => _demoOverview()),
-    API.get('/api/accountant/member-accounts').catch(() => _demoAccounts()),
-    API.get('/api/accountant/reports').catch(() => _demoReports())
-  ]);
+  try {
+    const [overview, members, reports] = await Promise.all([
+      API.get('/api/accountant/overview'),
+      API.get('/api/accountant/member-accounts'),
+      API.get('/api/accountant/reports')
+    ]);
 
-  accountantOverview = overview;
-  accountantMembers = members;
-  accountantReports = reports;
+    accountantOverview = overview;
+    accountantMembers = members || [];
+    accountantReports = reports || { monthly: [], topSavers: [], topBorrowers: [] };
+  } catch (error) {
+    accountantOverview = null;
+    accountantMembers = [];
+    accountantReports = { monthly: [], topSavers: [], topBorrowers: [] };
+    showToast(error.message || 'Unable to load accountant data from the database.', 'error');
+  }
 
   renderOverview();
   renderMembers();
@@ -39,7 +42,19 @@ async function loadAccountantDesk() {
 }
 
 function renderOverview() {
-  const overview = accountantOverview || _demoOverview();
+  const overview = accountantOverview || {
+    groupBalance: 0,
+    outstandingLoans: 0,
+    overdueMembers: 0,
+    pendingTransactions: 0,
+    portfolioHealth: 'Stable',
+    membersWithLoans: 0,
+    collectionsThisMonth: 0,
+    highRiskMembers: 0,
+    alerts: [],
+    recentTransactions: []
+  };
+
   _setText('acc-group-balance', Utils.formatCurrency(overview.groupBalance || 0));
   _setText('acc-outstanding', Utils.formatCurrency(overview.outstandingLoans || 0));
   _setText('acc-overdue', overview.overdueMembers || 0);
@@ -121,7 +136,7 @@ function renderMembers() {
 
 function renderReports() {
   const tbody = document.getElementById('accountant-report-body');
-  const reports = accountantReports || _demoReports();
+  const reports = accountantReports || { monthly: [], topSavers: [], topBorrowers: [] };
   const monthly = reports.monthly || [];
   tbody.innerHTML = monthly.length ? monthly.map(item => `
     <tr>
@@ -244,51 +259,4 @@ function _setText(id, value) {
 function _setValue(id, value) {
   const el = document.getElementById(id);
   if (el) el.value = value;
-}
-
-function _demoOverview() {
-  return {
-    groupBalance: 14600,
-    outstandingLoans: 18000,
-    overdueMembers: 1,
-    pendingTransactions: 2,
-    membersWithLoans: 3,
-    highRiskMembers: 1,
-    collectionsThisMonth: 4500,
-    portfolioHealth: 'Watchlist',
-    recentTransactions: [
-      { member: 'Anita Rao', type: 'Repayment', amount: 2000, date: '12 Apr 2026', state: 'Approved', description: 'Weekly collection' },
-      { member: 'Savita Kumari', type: 'Savings', amount: 1200, date: '10 Apr 2026', state: 'Approved', description: 'Monthly contribution' }
-    ],
-    alerts: [
-      { title: 'Anita Rao needs follow-up', detail: 'Outstanding loan has crossed the 30-day review window.', severity: 'high' },
-      { title: 'Two transactions are pending', detail: 'Approve or reject pending entries before report closing.', severity: 'medium' }
-    ]
-  };
-}
-
-function _demoAccounts() {
-  return [
-    { id: 1, name: 'Anita Rao', role: 'Member', savingsAmount: 4500, loanAmount: 6000, netPosition: -1500, health: 'High', loanStatus: 'Overdue', lastTransactionDate: '12 Apr 2026', lastRepaymentDate: '01 Mar 2026' },
-    { id: 2, name: 'Savita Kumari', role: 'Member', savingsAmount: 5200, loanAmount: 0, netPosition: 5200, health: 'Healthy', loanStatus: 'No Active Loan', lastTransactionDate: '10 Apr 2026', lastRepaymentDate: '-' },
-    { id: 3, name: 'Meena Patel', role: 'Secretary', savingsAmount: 1500, loanAmount: 8000, netPosition: -6500, health: 'Medium', loanStatus: 'Monitoring', lastTransactionDate: '04 Apr 2026', lastRepaymentDate: '29 Mar 2026' }
-  ];
-}
-
-function _demoReports() {
-  return {
-    monthly: [
-      { month: 'Feb 2026', savings: 4500, loans: 10000, repayments: 0, expenses: 1200 },
-      { month: 'Mar 2026', savings: 6200, loans: 8000, repayments: 2000, expenses: 900 },
-      { month: 'Apr 2026', savings: 5200, loans: 0, repayments: 2500, expenses: 500 }
-    ],
-    topSavers: [
-      { name: 'Savita Kumari', savingsAmount: 5200 },
-      { name: 'Priya Sharma', savingsAmount: 5000 }
-    ],
-    topBorrowers: [
-      { name: 'Meena Patel', loanAmount: 8000, health: 'Medium' },
-      { name: 'Anita Rao', loanAmount: 6000, health: 'High' }
-    ]
-  };
 }

@@ -249,8 +249,9 @@
   async function loadGroups() {
     try {
       _allGroups = await API.get('/api/groups') || [];
-    } catch {
-      _allGroups = _demoGroups();
+    } catch (err) {
+      _allGroups = [];
+      showToast(err.message || 'Failed to load groups from the database.', 'error');
     }
     renderGroups();
   }
@@ -379,14 +380,6 @@
     }
   }
 
-  function _demoGroups() {
-    return [
-      { id:1, name:'Mahila Shakti SHG',   location:'Village Rampur, UP',    totalBalance:125000, monthlyContribution:1000, status:'ACTIVE',   memberCount:24 },
-      { id:2, name:'Nari Pragati SHG',    location:'Block Bhitaura, UP',    totalBalance:87000,  monthlyContribution:750,  status:'ACTIVE',   memberCount:18 },
-      { id:3, name:'Grameen Unnati SHG',  location:'District Rae Bareli',   totalBalance:63000,  monthlyContribution:500,  status:'ACTIVE',   memberCount:15 },
-      { id:4, name:'Swashakti Mandal',    location:'Village Durgapur, WB',  totalBalance:44000,  monthlyContribution:500,  status:'INACTIVE', memberCount:12 }
-    ];
-  }
 </script>
 </body>
 </html>

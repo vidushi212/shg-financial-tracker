@@ -42,6 +42,14 @@ public class AuthApiController {
                     .body(Map.of("message", "Invalid username or password."));
         }
 
+        String status = member.get().getStatus() == null
+                ? "ACTIVE"
+                : member.get().getStatus().trim().toUpperCase(Locale.ENGLISH);
+        if (!"ACTIVE".equals(status) && !"APPROVED".equals(status)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Your account is not active yet. Please contact the administrator."));
+        }
+
         return ResponseEntity.ok(toAuthPayload(member.get()));
     }
 
@@ -78,13 +86,32 @@ public class AuthApiController {
     }
 
     private Map<String, Object> toAuthPayload(SHGMember member) {
+        String normalizedRole = member.getRole().toLowerCase(Locale.ENGLISH);
         return Map.of(
                 "id", member.getId(),
                 "username", member.getUsername(),
                 "fullName", member.getFullName(),
-                "role", member.getRole().toLowerCase(Locale.ENGLISH),
+                "role", normalizedRole,
+                "status", member.getStatus() == null ? "ACTIVE" : member.getStatus(),
                 "email", member.getEmail() == null ? "" : member.getEmail(),
-                "token", "demo-token-" + member.getId());
+                "landingPage", resolveLandingPage(normalizedRole),
+                "token", "auth-token-" + member.getId());
+    }
+
+    private String resolveLandingPage(String role) {
+        switch (role) {
+            case "admin":
+                return "/admin/brokers";
+            case "accountant":
+            case "treasurer":
+                return "/finance/accountant";
+            case "government officer":
+                return "/advisory/schemes";
+            case "broker":
+                return "/advisory/investments";
+            default:
+                return "/dashboard";
+        }
     }
 
     private String normalizeRole(String rawRole) {
