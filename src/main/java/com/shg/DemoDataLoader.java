@@ -20,6 +20,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Configuration
@@ -35,6 +37,8 @@ public class DemoDataLoader {
                                DiscussionRepository discussionRepository,
                                CommentRepository commentRepository) {
         return args -> {
+            seedInvestmentPlans(investmentPlanRepository);
+
             if (groupRepository.count() > 0) {
                 return;
             }
@@ -93,16 +97,6 @@ public class DemoDataLoader {
             memberRepository.save(secretary);
             memberRepository.save(memberOne);
             memberRepository.save(memberTwo);
-
-            InvestmentPlan fdPlan = new InvestmentPlan("SBI Fixed Deposit", 1000.0, 8.5, "Low", 12, "State Bank of India");
-            fdPlan.setDescription("Guaranteed low-risk return for surplus SHG savings.");
-            fdPlan.setStatus("APPROVED");
-            investmentPlanRepository.save(fdPlan);
-
-            InvestmentPlan microFinancePlan = new InvestmentPlan("Micro Enterprise Growth Plan", 5000.0, 11.8, "Medium", 24, "RK Investments");
-            microFinancePlan.setDescription("Structured investment plan for SHGs willing to take moderate risk.");
-            microFinancePlan.setStatus("APPROVED");
-            investmentPlanRepository.save(microFinancePlan);
 
             GovernmentScheme nrlm = new GovernmentScheme("DAY-NRLM", 250000.0, 7.0, 36, "Ministry of Rural Development");
             nrlm.setDescription("Subsidised credit support and capacity building for rural SHGs.");
@@ -177,5 +171,120 @@ public class DemoDataLoader {
         transaction.setTransactionDate(timestamp);
         transaction.setCreatedAt(timestamp);
         return transaction;
+    }
+
+    private void seedInvestmentPlans(InvestmentPlanRepository investmentPlanRepository) {
+        List<InvestmentPlanSeed> plans = Arrays.asList(
+                new InvestmentPlanSeed("SBI Fixed Deposit",
+                        "Guaranteed low-risk return for surplus SHG savings.",
+                        1000.0, 8.5, "Low", 12, "State Bank of India"),
+                new InvestmentPlanSeed("Micro Enterprise Growth Plan",
+                        "Structured investment plan for SHGs willing to take moderate risk.",
+                        5000.0, 11.8, "Medium", 24, "RK Investments"),
+                new InvestmentPlanSeed("HDFC Recurring Deposit Plus",
+                        "Monthly contribution plan with stable returns for disciplined SHG savings.",
+                        500.0, 7.9, "Low", 18, "HDFC Bank"),
+                new InvestmentPlanSeed("ICICI Women Prosperity Deposit",
+                        "Capital protection focused deposit tailored for women-led groups.",
+                        2000.0, 8.1, "Low", 15, "ICICI Bank"),
+                new InvestmentPlanSeed("NABARD Rural Growth Fund",
+                        "Diversified rural development fund with moderate long-term appreciation.",
+                        7500.0, 10.4, "Medium", 36, "NABARD"),
+                new InvestmentPlanSeed("Post Office Time Deposit",
+                        "Government-backed fixed return option for secure reserve planning.",
+                        1000.0, 7.7, "Low", 24, "India Post"),
+                new InvestmentPlanSeed("Axis Balanced Advantage Plan",
+                        "Balanced allocation plan combining equity growth with debt stability.",
+                        3000.0, 10.9, "Medium", 30, "Axis Mutual Fund"),
+                new InvestmentPlanSeed("SBI Gold Savings Basket",
+                        "Gold-linked savings product for inflation-aware long-term accumulation.",
+                        2500.0, 9.2, "Medium", 18, "SBI Mutual Fund"),
+                new InvestmentPlanSeed("Kotak Small Business Bond",
+                        "Fixed-income bond product supporting predictable medium-term cash growth.",
+                        4000.0, 9.8, "Medium", 20, "Kotak Securities"),
+                new InvestmentPlanSeed("Mahila Udyam Equity Link",
+                        "Higher-growth investment basket suited to SHGs building enterprise reserves.",
+                        10000.0, 13.1, "High", 36, "Mahila Capital Advisors"),
+                new InvestmentPlanSeed("Reliance Rural Infra Notes",
+                        "Infrastructure-linked notes offering elevated return potential with higher risk.",
+                        8000.0, 12.4, "High", 30, "Reliance Securities")
+        );
+
+        plans.forEach(plan -> upsertInvestmentPlan(investmentPlanRepository, plan));
+    }
+
+    private void upsertInvestmentPlan(InvestmentPlanRepository investmentPlanRepository, InvestmentPlanSeed seed) {
+        InvestmentPlan plan = investmentPlanRepository.findByPlanName(seed.planName())
+                .orElseGet(() -> new InvestmentPlan(
+                        seed.planName(),
+                        seed.minimumAmount(),
+                        seed.expectedReturn(),
+                        seed.riskLevel(),
+                        seed.durationMonths(),
+                        seed.brokerName()
+                ));
+
+        plan.setDescription(seed.description());
+        plan.setMinimumAmount(seed.minimumAmount());
+        plan.setExpectedReturn(seed.expectedReturn());
+        plan.setRiskLevel(seed.riskLevel());
+        plan.setDurationMonths(seed.durationMonths());
+        plan.setBrokerName(seed.brokerName());
+        plan.setStatus("APPROVED");
+        investmentPlanRepository.save(plan);
+    }
+
+    private static final class InvestmentPlanSeed {
+        private final String planName;
+        private final String description;
+        private final Double minimumAmount;
+        private final Double expectedReturn;
+        private final String riskLevel;
+        private final Integer durationMonths;
+        private final String brokerName;
+
+        private InvestmentPlanSeed(String planName,
+                                   String description,
+                                   Double minimumAmount,
+                                   Double expectedReturn,
+                                   String riskLevel,
+                                   Integer durationMonths,
+                                   String brokerName) {
+            this.planName = planName;
+            this.description = description;
+            this.minimumAmount = minimumAmount;
+            this.expectedReturn = expectedReturn;
+            this.riskLevel = riskLevel;
+            this.durationMonths = durationMonths;
+            this.brokerName = brokerName;
+        }
+
+        private String planName() {
+            return planName;
+        }
+
+        private String description() {
+            return description;
+        }
+
+        private Double minimumAmount() {
+            return minimumAmount;
+        }
+
+        private Double expectedReturn() {
+            return expectedReturn;
+        }
+
+        private String riskLevel() {
+            return riskLevel;
+        }
+
+        private Integer durationMonths() {
+            return durationMonths;
+        }
+
+        private String brokerName() {
+            return brokerName;
+        }
     }
 }

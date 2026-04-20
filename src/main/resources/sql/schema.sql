@@ -90,6 +90,50 @@ CREATE TABLE IF NOT EXISTS investment_plans (
     INDEX idx_broker_name (broker_name)
 );
 
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'SBI Fixed Deposit', 'Guaranteed low-risk return for surplus SHG savings.', 1000.00, 8.50, 'Low', 12, 'State Bank of India', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'SBI Fixed Deposit');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'Micro Enterprise Growth Plan', 'Structured investment plan for SHGs willing to take moderate risk.', 5000.00, 11.80, 'Medium', 24, 'RK Investments', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'Micro Enterprise Growth Plan');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'HDFC Recurring Deposit Plus', 'Monthly contribution plan with stable returns for disciplined SHG savings.', 500.00, 7.90, 'Low', 18, 'HDFC Bank', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'HDFC Recurring Deposit Plus');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'ICICI Women Prosperity Deposit', 'Capital protection focused deposit tailored for women-led groups.', 2000.00, 8.10, 'Low', 15, 'ICICI Bank', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'ICICI Women Prosperity Deposit');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'NABARD Rural Growth Fund', 'Diversified rural development fund with moderate long-term appreciation.', 7500.00, 10.40, 'Medium', 36, 'NABARD', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'NABARD Rural Growth Fund');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'Post Office Time Deposit', 'Government-backed fixed return option for secure reserve planning.', 1000.00, 7.70, 'Low', 24, 'India Post', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'Post Office Time Deposit');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'Axis Balanced Advantage Plan', 'Balanced allocation plan combining equity growth with debt stability.', 3000.00, 10.90, 'Medium', 30, 'Axis Mutual Fund', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'Axis Balanced Advantage Plan');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'SBI Gold Savings Basket', 'Gold-linked savings product for inflation-aware long-term accumulation.', 2500.00, 9.20, 'Medium', 18, 'SBI Mutual Fund', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'SBI Gold Savings Basket');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'Kotak Small Business Bond', 'Fixed-income bond product supporting predictable medium-term cash growth.', 4000.00, 9.80, 'Medium', 20, 'Kotak Securities', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'Kotak Small Business Bond');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'Mahila Udyam Equity Link', 'Higher-growth investment basket suited to SHGs building enterprise reserves.', 10000.00, 13.10, 'High', 36, 'Mahila Capital Advisors', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'Mahila Udyam Equity Link');
+
+INSERT INTO investment_plans (plan_name, description, minimum_amount, expected_return, risk_level, duration_months, broker_name, status)
+SELECT 'Reliance Rural Infra Notes', 'Infrastructure-linked notes offering elevated return potential with higher risk.', 8000.00, 12.40, 'High', 30, 'Reliance Securities', 'APPROVED'
+WHERE NOT EXISTS (SELECT 1 FROM investment_plans WHERE plan_name = 'Reliance Rural Infra Notes');
+
 -- Government Schemes Table
 CREATE TABLE IF NOT EXISTS government_schemes (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,

@@ -1,5 +1,5 @@
 /**
- * advisory.js – Advisory module: investment plans, government schemes,
+ * advisory.js - Advisory module: investment plans, government schemes,
  *               recommendations pages.
  */
 
@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (typeof Auth !== 'undefined') Auth.requireAuth();
 
   if (document.getElementById('investments-grid')) await loadInvestments();
-  if (document.getElementById('schemes-grid'))    await loadSchemes();
-  if (document.getElementById('recs-list'))       await loadRecommendations();
+  if (document.getElementById('schemes-grid')) await loadSchemes();
+  if (document.getElementById('recs-list')) await loadRecommendations();
 });
 
 // ================================================================
@@ -41,14 +41,14 @@ function renderPlans(plans) {
       <div class="plan-card">
         <div class="d-flex justify-content-between align-items-start mb-2">
           <h6 class="fw-bold mb-0">${Utils.escapeHtml(p.name)}</h6>
-          <span class="badge-custom badge-${(p.risk||'').toLowerCase()}">${Utils.escapeHtml(p.risk||'—')}</span>
+          <span class="badge-custom badge-${(p.risk || '').toLowerCase()}">${Utils.escapeHtml(p.risk || '-')}</span>
         </div>
         <div class="plan-rate">${Utils.escapeHtml(String(p.returnRate))}%</div>
         <div class="text-muted" style="font-size:.8rem">Annual return</div>
         <hr class="my-2">
         <div class="d-flex justify-content-between small text-muted">
-          <span><i class="bi bi-building me-1"></i>${Utils.escapeHtml(p.provider||'—')}</span>
-          <span><i class="bi bi-clock me-1"></i>${Utils.escapeHtml(p.tenure||'—')}</span>
+          <span><i class="bi bi-building me-1"></i>${Utils.escapeHtml(p.provider || '-')}</span>
+          <span><i class="bi bi-clock me-1"></i>${Utils.escapeHtml(p.tenure || '-')}</span>
         </div>
         <button class="btn-primary-custom w-100 mt-3 plan-detail-btn" data-plan-idx="${i}">
           View Details
@@ -62,19 +62,19 @@ function renderPlans(plans) {
 }
 
 function bindPlanFilters() {
-  ['plan-filter-type','plan-filter-risk','plan-search'].forEach(id => {
+  ['plan-filter-type', 'plan-filter-risk', 'plan-search'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', filterPlans);
   });
 }
 
 function filterPlans() {
-  const type   = document.getElementById('plan-filter-type')?.value  || '';
-  const risk   = document.getElementById('plan-filter-risk')?.value  || '';
+  const type = document.getElementById('plan-filter-type')?.value || '';
+  const risk = document.getElementById('plan-filter-risk')?.value || '';
   const search = (document.getElementById('plan-search')?.value || '').toLowerCase();
   const filtered = _plans.filter(p => {
-    if (type   && p.type !== type)     return false;
-    if (risk   && p.risk !== risk)     return false;
-    if (search && !(p.name||'').toLowerCase().includes(search)) return false;
+    if (type && p.type !== type) return false;
+    if (risk && p.risk !== risk) return false;
+    if (search && !(p.name || '').toLowerCase().includes(search)) return false;
     return true;
   });
   renderPlans(filtered);
@@ -86,12 +86,12 @@ function showPlanDetail(plan) {
   body.innerHTML = `
     <dl class="row mb-0">
       <dt class="col-5">Plan Name</dt>   <dd class="col-7">${Utils.escapeHtml(plan.name)}</dd>
-      <dt class="col-5">Provider</dt>    <dd class="col-7">${Utils.escapeHtml(plan.provider||'—')}</dd>
+      <dt class="col-5">Provider</dt>    <dd class="col-7">${Utils.escapeHtml(plan.provider || '-')}</dd>
       <dt class="col-5">Return Rate</dt> <dd class="col-7"><strong>${plan.returnRate}%</strong> per annum</dd>
-      <dt class="col-5">Risk Level</dt>  <dd class="col-7"><span class="badge-custom badge-${(plan.risk||'').toLowerCase()}">${Utils.escapeHtml(plan.risk||'—')}</span></dd>
-      <dt class="col-5">Tenure</dt>      <dd class="col-7">${Utils.escapeHtml(plan.tenure||'—')}</dd>
-      <dt class="col-5">Min. Amount</dt> <dd class="col-7">${Utils.formatCurrency(plan.minAmount||0)}</dd>
-      <dt class="col-5">Description</dt> <dd class="col-7">${Utils.escapeHtml(plan.description||'—')}</dd>
+      <dt class="col-5">Risk Level</dt>  <dd class="col-7"><span class="badge-custom badge-${(plan.risk || '').toLowerCase()}">${Utils.escapeHtml(plan.risk || '-')}</span></dd>
+      <dt class="col-5">Tenure</dt>      <dd class="col-7">${Utils.escapeHtml(plan.tenure || '-')}</dd>
+      <dt class="col-5">Min. Amount</dt> <dd class="col-7">${Utils.formatCurrency(plan.minAmount || 0)}</dd>
+      <dt class="col-5">Description</dt> <dd class="col-7">${Utils.escapeHtml(plan.description || '-')}</dd>
     </dl>`;
   const modal = new bootstrap.Modal(document.getElementById('planDetailModal'));
   modal.show();
@@ -127,12 +127,12 @@ function renderSchemes(schemes) {
       <div class="plan-card">
         <div class="d-flex justify-content-between align-items-start mb-1">
           <h6 class="fw-bold mb-0">${Utils.escapeHtml(s.name)}</h6>
-          <span class="badge-custom badge-savings">${Utils.escapeHtml(s.type||'Scheme')}</span>
+          <span class="badge-custom badge-savings">${Utils.escapeHtml(s.type || 'Scheme')}</span>
         </div>
-        <p class="text-muted small mb-2">${Utils.escapeHtml(s.description||'')}</p>
-        <div class="small mb-1"><strong>Issuer:</strong> ${Utils.escapeHtml(s.issuer||'—')}</div>
-        <div class="small mb-1"><strong>Eligibility:</strong> ${Utils.escapeHtml(s.eligibility||'—')}</div>
-        <div class="small mb-3"><strong>Benefit:</strong> ${Utils.escapeHtml(s.benefit||'—')}</div>
+        <p class="text-muted small mb-2">${Utils.escapeHtml(s.description || '')}</p>
+        <div class="small mb-1"><strong>Issuer:</strong> ${Utils.escapeHtml(s.issuer || '-')}</div>
+        <div class="small mb-1"><strong>Eligibility:</strong> ${Utils.escapeHtml(s.eligibility || '-')}</div>
+        <div class="small mb-3"><strong>Benefit:</strong> ${Utils.escapeHtml(s.benefit || '-')}</div>
         <button class="btn-primary-custom apply-scheme-btn" data-scheme-idx="${i}">
           <i class="bi bi-check2-circle"></i> Apply
         </button>
@@ -148,18 +148,18 @@ function renderSchemes(schemes) {
 }
 
 function bindSchemeFilters() {
-  ['scheme-filter-type','scheme-search'].forEach(id => {
+  ['scheme-filter-type', 'scheme-search'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', filterSchemes);
   });
 }
 
 function filterSchemes() {
-  const type   = document.getElementById('scheme-filter-type')?.value || '';
+  const type = document.getElementById('scheme-filter-type')?.value || '';
   const search = (document.getElementById('scheme-search')?.value || '').toLowerCase();
   const filtered = _schemes.filter(s => {
-    if (type   && s.type !== type) return false;
-    if (search && !(s.name||'').toLowerCase().includes(search) &&
-                  !(s.description||'').toLowerCase().includes(search)) return false;
+    if (type && s.type !== type) return false;
+    if (search && !(s.name || '').toLowerCase().includes(search) &&
+                  !(s.description || '').toLowerCase().includes(search)) return false;
     return true;
   });
   renderSchemes(filtered);
@@ -192,11 +192,11 @@ function renderRecs(recs) {
   list.innerHTML = recs.map(r => `
     <div class="content-card mb-3">
       <div class="d-flex align-items-start gap-3">
-        <div class="avatar" style="background:var(--secondary)">${r.priority === 'High' ? '!' : '→'}</div>
+        <div class="avatar" style="background:var(--secondary)">${r.priority === 'High' ? '!' : '->'}</div>
         <div class="flex-grow-1">
           <div class="d-flex justify-content-between">
             <h6 class="fw-bold mb-1">${Utils.escapeHtml(r.title)}</h6>
-            <span class="badge-custom badge-${(r.priority||'low').toLowerCase()}">${Utils.escapeHtml(r.priority||'Normal')}</span>
+            <span class="badge-custom badge-${(r.priority || 'low').toLowerCase()}">${Utils.escapeHtml(r.priority || 'Normal')}</span>
           </div>
           <p class="text-muted small mb-0">${Utils.escapeHtml(r.reason)}</p>
         </div>
@@ -204,35 +204,40 @@ function renderRecs(recs) {
     </div>`).join('');
 }
 
-// ── Demo data ─────────────────────────────────────────────────────
+// Demo data
 function _demoPlans() {
   return [
-    { name:'SBI Fixed Deposit',       provider:'State Bank of India', returnRate:8.5,  risk:'Low',    tenure:'1 Year',   minAmount:1000,  type:'FD',   description:'Safe fixed deposit with guaranteed returns.' },
-    { name:'Post Office MIS',          provider:'India Post',          returnRate:7.4,  risk:'Low',    tenure:'5 Years',  minAmount:1000,  type:'MIS',  description:'Monthly income scheme with steady payouts.' },
-    { name:'Sukanya Samriddhi Yojana', provider:'Government of India', returnRate:8.2,  risk:'Low',    tenure:'21 Years', minAmount:250,   type:'SIP',  description:'Girl child savings scheme with tax benefits.' },
-    { name:'SHG Micro Finance',        provider:'Grameen Bank',        returnRate:12.0, risk:'Medium', tenure:'2 Years',  minAmount:5000,  type:'Loan', description:'Micro-finance for SHG business activities.' },
-    { name:'PMJDY Savings',            provider:'IPPB',                returnRate:4.0,  risk:'Low',    tenure:'Ongoing',  minAmount:0,     type:'SIP',  description:'Zero-balance savings account with benefits.' },
-    { name:'Mudra Loan – Shishu',      provider:'MUDRA Bank',          returnRate:10.5, risk:'Medium', tenure:'3 Years',  minAmount:10000, type:'Loan', description:'Business loan up to ₹50,000 for micro enterprises.' }
+    { name:'SBI Fixed Deposit', provider:'State Bank of India', returnRate:8.5, risk:'Low', tenure:'12 months', minAmount:1000, type:'FD', description:'Guaranteed low-risk return for surplus SHG savings.' },
+    { name:'Micro Enterprise Growth Plan', provider:'RK Investments', returnRate:11.8, risk:'Medium', tenure:'24 months', minAmount:5000, type:'FD', description:'Structured investment plan for SHGs willing to take moderate risk.' },
+    { name:'HDFC Recurring Deposit Plus', provider:'HDFC Bank', returnRate:7.9, risk:'Low', tenure:'18 months', minAmount:500, type:'FD', description:'Monthly contribution plan with stable returns for disciplined SHG savings.' },
+    { name:'ICICI Women Prosperity Deposit', provider:'ICICI Bank', returnRate:8.1, risk:'Low', tenure:'15 months', minAmount:2000, type:'FD', description:'Capital protection focused deposit tailored for women-led groups.' },
+    { name:'NABARD Rural Growth Fund', provider:'NABARD', returnRate:10.4, risk:'Medium', tenure:'36 months', minAmount:7500, type:'FD', description:'Diversified rural development fund with moderate long-term appreciation.' },
+    { name:'Post Office Time Deposit', provider:'India Post', returnRate:7.7, risk:'Low', tenure:'24 months', minAmount:1000, type:'FD', description:'Government-backed fixed return option for secure reserve planning.' },
+    { name:'Axis Balanced Advantage Plan', provider:'Axis Mutual Fund', returnRate:10.9, risk:'Medium', tenure:'30 months', minAmount:3000, type:'FD', description:'Balanced allocation plan combining equity growth with debt stability.' },
+    { name:'SBI Gold Savings Basket', provider:'SBI Mutual Fund', returnRate:9.2, risk:'Medium', tenure:'18 months', minAmount:2500, type:'FD', description:'Gold-linked savings product for inflation-aware long-term accumulation.' },
+    { name:'Kotak Small Business Bond', provider:'Kotak Securities', returnRate:9.8, risk:'Medium', tenure:'20 months', minAmount:4000, type:'FD', description:'Fixed-income bond product supporting predictable medium-term cash growth.' },
+    { name:'Mahila Udyam Equity Link', provider:'Mahila Capital Advisors', returnRate:13.1, risk:'High', tenure:'36 months', minAmount:10000, type:'FD', description:'Higher-growth investment basket suited to SHGs building enterprise reserves.' },
+    { name:'Reliance Rural Infra Notes', provider:'Reliance Securities', returnRate:12.4, risk:'High', tenure:'30 months', minAmount:8000, type:'FD', description:'Infrastructure-linked notes offering elevated return potential with higher risk.' }
   ];
 }
 
 function _demoSchemes() {
   return [
-    { id:'pmjdy', name:'PM Jan Dhan Yojana',        type:'Banking',    eligibility:'All citizens',      benefit:'Zero-balance bank account + insurance', description:'Financial inclusion scheme for all.' },
-    { id:'pmmy',  name:'PM Mudra Yojana',            type:'Loan',       eligibility:'Small businesses',  benefit:'Loans up to ₹10 lakhs',                description:'Micro-enterprise loan scheme.' },
-    { id:'nrlm',  name:'NRLM – Aajeevika',           type:'SHG',        eligibility:'Rural women SHGs',  benefit:'Subsidised credit & capacity building', description:'National rural livelihood mission.' },
-    { id:'pmsby', name:'PM Suraksha Bima Yojana',    type:'Insurance',  eligibility:'Age 18-70, bank a/c', benefit:'₹2 lakh accident cover @ ₹20/yr',    description:'Accidental death & disability insurance.' },
-    { id:'pmjjby',name:'PM Jeevan Jyoti Bima',       type:'Insurance',  eligibility:'Age 18-50',         benefit:'₹2 lakh life cover @ ₹436/yr',         description:'Life insurance for all.' },
-    { id:'atal',  name:'Atal Pension Yojana',        type:'Pension',    eligibility:'Age 18-40',         benefit:'₹1000–₹5000 monthly pension',          description:'Government pension for unorganised sector.' }
+    { id:'pmjdy', name:'PM Jan Dhan Yojana', type:'Banking', eligibility:'All citizens', benefit:'Zero-balance bank account + insurance', description:'Financial inclusion scheme for all.' },
+    { id:'pmmy', name:'PM Mudra Yojana', type:'Loan', eligibility:'Small businesses', benefit:'Loans up to Rs.10 lakhs', description:'Micro-enterprise loan scheme.' },
+    { id:'nrlm', name:'NRLM - Aajeevika', type:'SHG', eligibility:'Rural women SHGs', benefit:'Subsidised credit & capacity building', description:'National rural livelihood mission.' },
+    { id:'pmsby', name:'PM Suraksha Bima Yojana', type:'Insurance', eligibility:'Age 18-70, bank a/c', benefit:'Rs.2 lakh accident cover @ Rs.20/yr', description:'Accidental death & disability insurance.' },
+    { id:'pmjjby', name:'PM Jeevan Jyoti Bima', type:'Insurance', eligibility:'Age 18-50', benefit:'Rs.2 lakh life cover @ Rs.436/yr', description:'Life insurance for all.' },
+    { id:'atal', name:'Atal Pension Yojana', type:'Pension', eligibility:'Age 18-40', benefit:'Rs.1000-Rs.5000 monthly pension', description:'Government pension for unorganised sector.' }
   ];
 }
 
 function _demoRecs() {
   return [
-    { title:'Increase Monthly Savings',    reason:'Group balance is below the 6-month target threshold.',   priority:'High' },
-    { title:'Consider Fixed Deposit',      reason:'Idle funds can earn higher returns in SBI FD.',           priority:'Medium' },
-    { title:'Apply for NRLM Subsidy',      reason:'Your group meets the eligibility criteria.',              priority:'High' },
-    { title:'Review Loan Repayment',       reason:'3 members have overdue loan instalments.',                priority:'Medium' },
-    { title:'Diversify to Mutual Funds',   reason:'Long-term growth potential with moderate risk.',          priority:'Low' }
+    { title:'Increase Monthly Savings', reason:'Group balance is below the 6-month target threshold.', priority:'High' },
+    { title:'Consider Fixed Deposit', reason:'Idle funds can earn higher returns in SBI FD.', priority:'Medium' },
+    { title:'Apply for NRLM Subsidy', reason:'Your group meets the eligibility criteria.', priority:'High' },
+    { title:'Review Loan Repayment', reason:'3 members have overdue loan instalments.', priority:'Medium' },
+    { title:'Diversify to Mutual Funds', reason:'Long-term growth potential with moderate risk.', priority:'Low' }
   ];
 }
