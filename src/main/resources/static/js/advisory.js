@@ -6,10 +6,28 @@
 document.addEventListener('DOMContentLoaded', async () => {
   if (typeof Auth !== 'undefined') Auth.requireAuth();
 
+  initAdvisoryManagement();
+
   if (document.getElementById('investments-grid')) await loadInvestments();
   if (document.getElementById('schemes-grid')) await loadSchemes();
   if (document.getElementById('recs-list')) await loadRecommendations();
 });
+
+const advisoryManagerRoles = ['government officer', 'admin'];
+const canManageAdvisory = () => typeof Auth !== 'undefined' && Auth.hasRole(advisoryManagerRoles);
+
+function initAdvisoryManagement() {
+  const managerMode = canManageAdvisory();
+  document.getElementById('investment-admin-actions')?.classList.toggle('d-none', !managerMode);
+  document.getElementById('investment-manager-banner')?.classList.toggle('d-none', !managerMode);
+  document.getElementById('scheme-admin-actions')?.classList.toggle('d-none', !managerMode);
+  document.getElementById('scheme-manager-banner')?.classList.toggle('d-none', !managerMode);
+
+  document.getElementById('add-plan-btn')?.addEventListener('click', () => openPlanForm());
+  document.getElementById('add-scheme-btn')?.addEventListener('click', () => openSchemeForm());
+  document.getElementById('plan-form')?.addEventListener('submit', submitPlanForm);
+  document.getElementById('scheme-form')?.addEventListener('submit', submitSchemeForm);
+}
 
 // ================================================================
 // INVESTMENT PLANS
@@ -30,6 +48,7 @@ async function loadInvestments() {
 function renderPlans(plans) {
   const grid = document.getElementById('investments-grid');
   if (!grid) return;
+  _planMap.clear();
   if (!plans.length) {
     grid.innerHTML = '<div class="col-12 text-center text-muted py-4">No plans found.</div>';
     return;
@@ -38,26 +57,42 @@ function renderPlans(plans) {
 
   grid.innerHTML = plans.map((p, i) => `
     <div class="col-md-4 col-sm-6">
-      <div class="plan-card">
-        <div class="d-flex justify-content-between align-items-start mb-2">
+      <div class="plan-card h-100">
+        <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
           <h6 class="fw-bold mb-0">${Utils.escapeHtml(p.name)}</h6>
           <span class="badge-custom badge-${(p.risk || '').toLowerCase()}">${Utils.escapeHtml(p.risk || '-')}</span>
         </div>
         <div class="plan-rate">${Utils.escapeHtml(String(p.returnRate))}%</div>
         <div class="text-muted" style="font-size:.8rem">Annual return</div>
         <hr class="my-2">
-        <div class="d-flex justify-content-between small text-muted">
+        <div class="d-flex justify-content-between small text-muted mb-2">
           <span><i class="bi bi-building me-1"></i>${Utils.escapeHtml(p.provider || '-')}</span>
           <span><i class="bi bi-clock me-1"></i>${Utils.escapeHtml(p.tenure || '-')}</span>
         </div>
-        <button class="btn-primary-custom w-100 mt-3 plan-detail-btn" data-plan-idx="${i}">
-          View Details
-        </button>
+        ${canManageAdvisory() ? `<div class="small text-muted mb-2"><strong>Status:</strong> ${Utils.escapeHtml(p.status || 'APPROVED')}</div>` : ''}
+        <div class="mt-auto d-flex gap-2 flex-wrap">
+          <button class="btn-primary-custom flex-grow-1 plan-detail-btn" data-plan-idx="${i}">
+            View Details
+          </button>
+          ${canManageAdvisory() ? `
+            <button class="btn btn-outline-secondary plan-edit-btn" data-plan-idx="${i}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-outline-danger plan-delete-btn" data-plan-id="${Utils.escapeHtml(String(p.id || ''))}">
+              <i class="bi bi-trash"></i>
+            </button>` : ''}
+        </div>
       </div>
     </div>`).join('');
 
   grid.querySelectorAll('.plan-detail-btn').forEach(btn => {
     btn.addEventListener('click', () => showPlanDetail(_planMap.get(btn.dataset.planIdx)));
+  });
+  grid.querySelectorAll('.plan-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openPlanForm(_planMap.get(btn.dataset.planIdx)));
+  });
+  grid.querySelectorAll('.plan-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deletePlan(btn.dataset.planId));
   });
 }
 
@@ -82,7 +117,7 @@ function filterPlans() {
 
 function showPlanDetail(plan) {
   const body = document.getElementById('plan-modal-body');
-  if (!body) return;
+  if (!body || !plan) return;
   body.innerHTML = `
     <dl class="row mb-0">
       <dt class="col-5">Plan Name</dt>   <dd class="col-7">${Utils.escapeHtml(plan.name)}</dd>
@@ -91,10 +126,69 @@ function showPlanDetail(plan) {
       <dt class="col-5">Risk Level</dt>  <dd class="col-7"><span class="badge-custom badge-${(plan.risk || '').toLowerCase()}">${Utils.escapeHtml(plan.risk || '-')}</span></dd>
       <dt class="col-5">Tenure</dt>      <dd class="col-7">${Utils.escapeHtml(plan.tenure || '-')}</dd>
       <dt class="col-5">Min. Amount</dt> <dd class="col-7">${Utils.formatCurrency(plan.minAmount || 0)}</dd>
+      ${plan.status ? `<dt class="col-5">Status</dt><dd class="col-7">${Utils.escapeHtml(plan.status)}</dd>` : ''}
       <dt class="col-5">Description</dt> <dd class="col-7">${Utils.escapeHtml(plan.description || '-')}</dd>
     </dl>`;
   const modal = new bootstrap.Modal(document.getElementById('planDetailModal'));
   modal.show();
+}
+
+function openPlanForm(plan = null) {
+  if (!canManageAdvisory()) return;
+  document.getElementById('plan-form-title').textContent = plan ? 'Edit Investment Plan' : 'Add Investment Plan';
+  document.getElementById('plan-id').value = plan?.id || '';
+  document.getElementById('plan-name').value = plan?.name || '';
+  document.getElementById('plan-provider').value = plan?.provider || '';
+  document.getElementById('plan-return-rate').value = plan?.returnRate || '';
+  document.getElementById('plan-risk').value = plan?.risk || 'Low';
+  document.getElementById('plan-duration').value = plan?.durationMonths || parseMonths(plan?.tenure);
+  document.getElementById('plan-min-amount').value = plan?.minAmount || '';
+  document.getElementById('plan-status').value = plan?.status || 'APPROVED';
+  document.getElementById('plan-description').value = plan?.description || '';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('planFormModal')).show();
+}
+
+async function submitPlanForm(event) {
+  event.preventDefault();
+  if (!canManageAdvisory()) return;
+
+  const id = document.getElementById('plan-id').value;
+  const payload = {
+    name: document.getElementById('plan-name').value.trim(),
+    provider: document.getElementById('plan-provider').value.trim(),
+    returnRate: document.getElementById('plan-return-rate').value,
+    risk: document.getElementById('plan-risk').value,
+    durationMonths: document.getElementById('plan-duration').value,
+    minAmount: document.getElementById('plan-min-amount').value,
+    status: document.getElementById('plan-status').value,
+    description: document.getElementById('plan-description').value.trim()
+  };
+
+  try {
+    if (id) {
+      await API.put(`/api/advisory/investment-plans/${id}`, payload);
+      showToast('Investment plan updated successfully.', 'success');
+    } else {
+      await API.post('/api/advisory/investment-plans', payload);
+      showToast('Investment plan created successfully.', 'success');
+    }
+    bootstrap.Modal.getInstance(document.getElementById('planFormModal'))?.hide();
+    await loadInvestments();
+  } catch (error) {
+    showToast(error.message || 'Unable to save investment plan.', 'danger');
+  }
+}
+
+async function deletePlan(id) {
+  if (!canManageAdvisory() || !id) return;
+  if (!window.confirm('Delete this investment plan?')) return;
+  try {
+    await API.del(`/api/advisory/investment-plans/${id}`);
+    showToast('Investment plan deleted.', 'success');
+    await loadInvestments();
+  } catch (error) {
+    showToast(error.message || 'Unable to delete investment plan.', 'danger');
+  }
 }
 
 // ================================================================
@@ -116,6 +210,7 @@ async function loadSchemes() {
 function renderSchemes(schemes) {
   const grid = document.getElementById('schemes-grid');
   if (!grid) return;
+  _schemeMap.clear();
   if (!schemes.length) {
     grid.innerHTML = '<div class="col-12 text-center text-muted py-4">No schemes found.</div>';
     return;
@@ -124,8 +219,8 @@ function renderSchemes(schemes) {
 
   grid.innerHTML = schemes.map((s, i) => `
     <div class="col-md-6">
-      <div class="plan-card">
-        <div class="d-flex justify-content-between align-items-start mb-1">
+      <div class="plan-card h-100">
+        <div class="d-flex justify-content-between align-items-start mb-1 gap-2">
           <h6 class="fw-bold mb-0">${Utils.escapeHtml(s.name)}</h6>
           <span class="badge-custom badge-savings">${Utils.escapeHtml(s.type || 'Scheme')}</span>
         </div>
@@ -133,9 +228,18 @@ function renderSchemes(schemes) {
         <div class="small mb-1"><strong>Issuer:</strong> ${Utils.escapeHtml(s.issuer || '-')}</div>
         <div class="small mb-1"><strong>Eligibility:</strong> ${Utils.escapeHtml(s.eligibility || '-')}</div>
         <div class="small mb-3"><strong>Benefit:</strong> ${Utils.escapeHtml(s.benefit || '-')}</div>
-        <button class="btn-primary-custom apply-scheme-btn" data-scheme-idx="${i}">
-          <i class="bi bi-check2-circle"></i> Apply
-        </button>
+        <div class="mt-auto d-flex gap-2 flex-wrap">
+          <button class="btn-primary-custom apply-scheme-btn flex-grow-1" data-scheme-idx="${i}">
+            <i class="bi bi-check2-circle"></i> Apply
+          </button>
+          ${canManageAdvisory() ? `
+            <button class="btn btn-outline-secondary scheme-edit-btn" data-scheme-idx="${i}">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-outline-danger scheme-delete-btn" data-scheme-id="${Utils.escapeHtml(String(s.id || ''))}">
+              <i class="bi bi-trash"></i>
+            </button>` : ''}
+        </div>
       </div>
     </div>`).join('');
 
@@ -144,6 +248,12 @@ function renderSchemes(schemes) {
       const s = _schemeMap.get(btn.dataset.schemeIdx);
       applyScheme(s ? (s.id || s.name) : '');
     });
+  });
+  grid.querySelectorAll('.scheme-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openSchemeForm(_schemeMap.get(btn.dataset.schemeIdx)));
+  });
+  grid.querySelectorAll('.scheme-delete-btn').forEach(btn => {
+    btn.addEventListener('click', () => deleteScheme(btn.dataset.schemeId));
   });
 }
 
@@ -167,6 +277,62 @@ function filterSchemes() {
 
 function applyScheme(id) {
   showToast('Application submitted for scheme: ' + id, 'success');
+}
+
+function openSchemeForm(scheme = null) {
+  if (!canManageAdvisory()) return;
+  document.getElementById('scheme-form-title').textContent = scheme ? 'Edit Government Scheme' : 'Add Government Scheme';
+  document.getElementById('scheme-id').value = scheme?.id || '';
+  document.getElementById('scheme-name').value = scheme?.name || '';
+  document.getElementById('scheme-issuer').value = scheme?.issuer || '';
+  document.getElementById('scheme-max-amount').value = scheme?.maxLoanAmount || parseAmountFromBenefit(scheme?.benefit);
+  document.getElementById('scheme-interest-rate').value = scheme?.interestRate || parseRateFromBenefit(scheme?.benefit);
+  document.getElementById('scheme-repayment-months').value = scheme?.repaymentPeriodMonths || parseMonthsFromBenefit(scheme?.benefit);
+  document.getElementById('scheme-eligibility').value = scheme?.eligibility || '';
+  document.getElementById('scheme-description').value = scheme?.description || '';
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('schemeFormModal')).show();
+}
+
+async function submitSchemeForm(event) {
+  event.preventDefault();
+  if (!canManageAdvisory()) return;
+
+  const id = document.getElementById('scheme-id').value;
+  const payload = {
+    name: document.getElementById('scheme-name').value.trim(),
+    issuer: document.getElementById('scheme-issuer').value.trim(),
+    maxLoanAmount: document.getElementById('scheme-max-amount').value,
+    interestRate: document.getElementById('scheme-interest-rate').value,
+    repaymentPeriodMonths: document.getElementById('scheme-repayment-months').value,
+    eligibility: document.getElementById('scheme-eligibility').value.trim(),
+    description: document.getElementById('scheme-description').value.trim()
+  };
+
+  try {
+    if (id) {
+      await API.put(`/api/advisory/govt-schemes/${id}`, payload);
+      showToast('Government scheme updated successfully.', 'success');
+    } else {
+      await API.post('/api/advisory/govt-schemes', payload);
+      showToast('Government scheme created successfully.', 'success');
+    }
+    bootstrap.Modal.getInstance(document.getElementById('schemeFormModal'))?.hide();
+    await loadSchemes();
+  } catch (error) {
+    showToast(error.message || 'Unable to save government scheme.', 'danger');
+  }
+}
+
+async function deleteScheme(id) {
+  if (!canManageAdvisory() || !id) return;
+  if (!window.confirm('Delete this government scheme?')) return;
+  try {
+    await API.del(`/api/advisory/govt-schemes/${id}`);
+    showToast('Government scheme deleted.', 'success');
+    await loadSchemes();
+  } catch (error) {
+    showToast(error.message || 'Unable to delete government scheme.', 'danger');
+  }
 }
 
 // ================================================================
@@ -202,6 +368,26 @@ function renderRecs(recs) {
         </div>
       </div>
     </div>`).join('');
+}
+
+function parseMonths(tenure) {
+  const match = String(tenure || '').match(/(\d+)/);
+  return match ? match[1] : '';
+}
+
+function parseAmountFromBenefit(benefit) {
+  const match = String(benefit || '').match(/(\d+(?:\.\d+)?)/);
+  return match ? match[1] : '';
+}
+
+function parseRateFromBenefit(benefit) {
+  const match = String(benefit || '').match(/at\s+(\d+(?:\.\d+)?)/i);
+  return match ? match[1] : '';
+}
+
+function parseMonthsFromBenefit(benefit) {
+  const match = String(benefit || '').match(/for\s+(\d+)/i);
+  return match ? match[1] : '';
 }
 
 // Demo data

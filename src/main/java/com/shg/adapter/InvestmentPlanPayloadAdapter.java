@@ -17,9 +17,11 @@ public class InvestmentPlanPayloadAdapter implements ApiPayloadAdapter<Investmen
         payload.put("provider", plan.getBrokerName());
         payload.put("returnRate", plan.getExpectedReturn());
         payload.put("risk", plan.getRiskLevel());
+        payload.put("durationMonths", plan.getDurationMonths());
         payload.put("tenure", plan.getDurationMonths() + " months");
         payload.put("minAmount", plan.getMinimumAmount());
         payload.put("type", plan.getDurationMonths() >= 12 ? "FD" : "SIP");
+        payload.put("status", plan.getStatus());
         payload.put("description", plan.getDescription() == null ? "" : plan.getDescription());
         return payload;
     }

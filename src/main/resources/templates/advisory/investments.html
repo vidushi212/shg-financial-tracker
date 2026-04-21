@@ -66,7 +66,18 @@
   </div>
 
   <div class="page-header">
-    <h4><i class="bi bi-bank me-2"></i>Investment Plans</h4>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <h4 class="mb-0"><i class="bi bi-bank me-2"></i>Investment Plans</h4>
+      <div id="investment-admin-actions" class="d-none">
+        <button type="button" class="btn-primary-custom" id="add-plan-btn">
+          <i class="bi bi-plus-circle me-1"></i>Add Plan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-info d-none" id="investment-manager-banner">
+    Government officers and admins can add, edit, and delete investment plans from this page.
   </div>
 
   <!-- Filter Bar -->
@@ -122,6 +133,68 @@
           <i class="bi bi-check2-circle me-1"></i>Register Interest
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="planFormModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title" id="plan-form-title">Add Investment Plan</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="plan-form">
+        <div class="modal-body">
+          <input type="hidden" id="plan-id">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="plan-name">Plan Name</label>
+              <input class="form-control" id="plan-name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="plan-provider">Provider</label>
+              <input class="form-control" id="plan-provider" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="plan-return-rate">Return Rate (%)</label>
+              <input type="number" min="0" step="0.01" class="form-control" id="plan-return-rate" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="plan-risk">Risk Level</label>
+              <select class="form-select" id="plan-risk" required>
+                <option value="Low">Low</option>
+                <option value="Medium">Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="plan-duration">Duration (months)</label>
+              <input type="number" min="1" step="1" class="form-control" id="plan-duration" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="plan-min-amount">Minimum Amount</label>
+              <input type="number" min="0" step="0.01" class="form-control" id="plan-min-amount" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="plan-status">Status</label>
+              <select class="form-select" id="plan-status">
+                <option value="APPROVED">Approved</option>
+                <option value="PENDING">Pending</option>
+                <option value="REJECTED">Rejected</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="plan-description">Description</label>
+              <textarea class="form-control" id="plan-description" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-primary-custom">Save Plan</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

@@ -65,7 +65,18 @@
   </div>
 
   <div class="page-header">
-    <h4><i class="bi bi-building-check me-2"></i>Government Schemes</h4>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <h4 class="mb-0"><i class="bi bi-building-check me-2"></i>Government Schemes</h4>
+      <div id="scheme-admin-actions" class="d-none">
+        <button type="button" class="btn-primary-custom" id="add-scheme-btn">
+          <i class="bi bi-plus-circle me-1"></i>Add Scheme
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-info d-none" id="scheme-manager-banner">
+    Government officers and admins can add, edit, and delete scheme records from this page.
   </div>
 
   <div class="filter-bar">
@@ -93,6 +104,56 @@
     <div class="col-12 text-center py-4"><div class="spinner-border text-success"></div></div>
   </div>
 </main>
+
+<div class="modal fade" id="schemeFormModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header modal-header-custom">
+        <h5 class="modal-title" id="scheme-form-title">Add Government Scheme</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="scheme-form">
+        <div class="modal-body">
+          <input type="hidden" id="scheme-id">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="scheme-name">Scheme Name</label>
+              <input class="form-control" id="scheme-name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="scheme-issuer">Government Body</label>
+              <input class="form-control" id="scheme-issuer" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="scheme-max-amount">Maximum Amount</label>
+              <input type="number" min="0" step="0.01" class="form-control" id="scheme-max-amount" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="scheme-interest-rate">Interest Rate (%)</label>
+              <input type="number" min="0" step="0.01" class="form-control" id="scheme-interest-rate" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="scheme-repayment-months">Repayment Period (months)</label>
+              <input type="number" min="1" step="1" class="form-control" id="scheme-repayment-months" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="scheme-eligibility">Eligibility</label>
+              <textarea class="form-control" id="scheme-eligibility" rows="2"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="scheme-description">Description</label>
+              <textarea class="form-control" id="scheme-description" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-primary-custom">Save Scheme</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/utils.js}"></script>

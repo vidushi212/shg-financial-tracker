@@ -33,6 +33,9 @@ public class GovernmentSchemePayloadAdapter implements ApiPayloadAdapter<Governm
         payload.put("eligibility", scheme.getEligibility() == null ? "" : scheme.getEligibility());
         String issuer = scheme.getGovernmentBody() == null ? "" : scheme.getGovernmentBody();
         payload.put("issuer", issuer);
+        payload.put("maxLoanAmount", scheme.getMaxLoanAmount());
+        payload.put("interestRate", scheme.getInterestRate());
+        payload.put("repaymentPeriodMonths", scheme.getRepaymentPeriodMonths());
         if (scheme.getMaxLoanAmount() == null || scheme.getMaxLoanAmount() <= 0) {
             payload.put("benefit", issuer.isEmpty() ? "Scheme benefits available." : "Policy benefits available from " + issuer + ".");
         } else {

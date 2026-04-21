@@ -26,6 +26,13 @@ const API = (() => {
     // JWT token from session storage
     const token = sessionStorage.getItem('shg_token');
     if (token) headers['Authorization'] = 'Bearer ' + token;
+    try {
+      const user = JSON.parse(sessionStorage.getItem('shg_user') || 'null');
+      if (user?.role) headers['X-User-Role'] = user.role;
+      if (user?.id != null) headers['X-User-Id'] = String(user.id);
+    } catch {
+      // Ignore malformed session data and continue without custom auth headers.
+    }
     return headers;
   }
 
